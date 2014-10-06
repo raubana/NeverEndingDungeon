@@ -42,11 +42,11 @@ class Grid(object):
 class Tile(object):
 	def __init__(self, main):
 		self.main = main
-		self.init()
-
+		self.solid = False
+		self.deadly = False
 		self.flagged_for_rerender = True
-
 		self.rendered_surface = pygame.Surface((TILE_SIZE,TILE_SIZE))
+		self.init()
 
 	def init(self):
 		pass
@@ -57,14 +57,25 @@ class Tile(object):
 	def rerender(self):
 		if self.flagged_for_rerender:
 			self.flagged_for_rerender = False
-			color = (92+random.randint(-16,16),150+random.randint(-16,16),153+random.randint(-16,16))
+			color = (92+random.randint(-4,4),150+random.randint(-4,4),153+random.randint(-4,4))
 			self.rendered_surface.fill(color)
-			pygame.draw.rect(self.rendered_surface, (color[0]/2, color[1]/2, color[2]/2), (0,0,TILE_SIZE,TILE_SIZE), 1)
+			pygame.draw.rect(self.rendered_surface, (color[0]-10, color[1]-10, color[2]-10), (0,0,TILE_SIZE,TILE_SIZE), 1)
 
 	def render(self, surface, pos, force = False):
 		self.rerender()
 		surface.blit(self.rendered_surface, pos)
 
+
+class WallTile(Tile):
+	def init(self):
+		self.solid = True
+
+	def rerender(self):
+		if self.flagged_for_rerender:
+			self.flagged_for_rerender = False
+			color = (120,120,80)
+			self.rendered_surface.fill(color)
+			pygame.draw.rect(self.rendered_surface, (color[0]/2, color[1]/2, color[2]/2), (0,0,TILE_SIZE,TILE_SIZE), 1)
 
 
 

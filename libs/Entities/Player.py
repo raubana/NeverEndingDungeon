@@ -90,6 +90,8 @@ class Player(Entity):
 		self.prev_pos = tuple(self.pos)
 		self.pos[0] += self.vec[0]
 		self.pos[1] += self.vec[1]
+		self.calc_rect()
+		self.do_tile_collision_detection()
 
 	def render(self):
 		offset = self.main.world.visible_grid.offset
