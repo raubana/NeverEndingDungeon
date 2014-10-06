@@ -54,7 +54,7 @@ class Main(object):
 		self.running = True
 		while self.running:
 			self.events = pygame.event.get()
-			self.keys = pygame.key.get_pressed()
+			self.keys = list(pygame.key.get_pressed())
 			self.mouse_pos = pygame.mouse.get_pos()
 			self.time = time.time()
 
