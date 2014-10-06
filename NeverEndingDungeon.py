@@ -1,13 +1,9 @@
-# ====== IMPORTS ======
-# --- Pygame ---
 import pygame
 from pygame.locals import*
 pygame.init()
 
-# --- Custom Modules ---
 from libs.World import World
 
-# --- Misc. ---
 import time
 
 
@@ -24,29 +20,15 @@ class Main(object):
 		self.run()
 
 	def reset(self):
-		"""
-		RESET: Called when the entire application needs to be reset.
-		"""
 		self.world = World(self)
 
 	def update(self):
-		"""
-		UPDATE: Called to perform logic calculations. Called before any movements are performed.
-		"""
 		self.world.update()
 
 	def move(self):
-		"""
-		MOVE: Called to perform logic calculations. Called after 'update'.
-		"""
 		self.world.move()
 
 	def render(self):
-		"""
-		RENDER: Called after 'update' and 'move' are done,
-		so that any changes can be rendered and then displayed on screen.
-		"""
-		#self.screen.fill((0,0,0)) #We only use this when necessary.
 		self.world.render()
 		pygame.display.flip()
 
