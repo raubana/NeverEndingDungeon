@@ -23,6 +23,10 @@ class Main(object):
 		self.world = World(self)
 
 	def update(self):
+		for e in self.events:
+			if e.type == KEYDOWN and e.key == K_r:
+				self.reset()
+
 		self.world.update()
 
 	def move(self):
