@@ -3,6 +3,7 @@ from pygame.locals import*
 
 from TileSystem import Grid, VisibleGrid, Tile, WallTile, TILE_SIZE
 from Entities.Player import Player
+from Entities.Baddie1 import Baddie1
 
 import random
 
@@ -35,6 +36,8 @@ class World(object):
 		self.npcs = []
 		self.particles = []
 
+		self.npcs.append(Baddie1(main, (TILE_SIZE/2,TILE_SIZE/2)))
+
 		new_offset = (-((self.grid.gridsize[0]*TILE_SIZE*0.5) - (self.main.screen_size[0]/2)), -((self.grid.gridsize[1]*TILE_SIZE*0.5) - (self.main.screen_size[1]/2)))
 		#new_offset = ((0) - (self.main.screen_size[0]/2), (0) - (self.main.screen_size[1]/2))
 		self.visible_grid.set_offset(new_offset)
@@ -48,21 +51,22 @@ class World(object):
 		#Updates the player.
 		self.player.update()
 
-		#Then updates/prunes NPCs.
-		i = len(self.npcs) - 1
-		while i >= 0:
-			self.npcs[i].update()
-			if self.npcs[i].dead:
-				del self.npcs[i]
-			i -= 1
+		if not self.player.dead:
+			#Then updates/prunes NPCs.
+			i = len(self.npcs) - 1
+			while i >= 0:
+				self.npcs[i].update()
+				if self.npcs[i].dead:
+					del self.npcs[i]
+				i -= 1
 
-		#Then updates/prunes particles.
-		i = len(self.particles) - 1
-		while i >= 0:
-			self.particles[i].update()
-			if self.particles[i].dead:
-				del self.particles[i]
-			i -= 1
+			#Then updates/prunes particles.
+			i = len(self.particles) - 1
+			while i >= 0:
+				self.particles[i].update()
+				if self.particles[i].dead:
+					del self.particles[i]
+				i -= 1
 
 	def move(self):
 		"""
@@ -70,10 +74,11 @@ class World(object):
 		Calls 'move' on all entities.
 		"""
 		self.player.move()
-		for npc in self.npcs:
-			npc.move()
-		for particle in self.particles:
-			particle.move()
+		if not self.player.dead:
+			for npc in self.npcs:
+				npc.move()
+			for particle in self.particles:
+				particle.move()
 
 		#moves the 'camera'
 
@@ -113,8 +118,8 @@ class World(object):
 		"""
 		#first we render the background.
 		self.visible_grid.render()
-		self.player.render()
 		for npc in self.npcs:
 			npc.render()
 		for particle in self.particles:
 			particle.render()
+		self.player.render()

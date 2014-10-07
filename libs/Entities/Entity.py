@@ -6,12 +6,20 @@ class Entity(object):
 	"""
 	The parent class for all entities.
 	"""
-	def __init__(self, main, pos, size = (24,24)):
+	def __init__(self, main, pos, size = (32,32)):
 		self.main = main
-		self.pos = pos
+		self.pos = list(pos)
 		self.size = size
 		self.calc_rect()
 		self.dead = False
+		self.is_bad = False
+
+		self.is_hurt = False
+		self.hurt = 0
+		self.hurt_length = 10
+		self.hurt_delay = 60
+		self.hurt_direction = [0,0]
+
 		self.init()
 
 	def init(self):
@@ -19,6 +27,19 @@ class Entity(object):
 		It may seem silly, but this is here so that the child-class
 		can do it's own initializing after the parent is done.
 		"""
+		pass
+
+	def __hurt__(self, amount, direction = [0,0]):
+		if self.hurt == 0 and not self.is_hurt:
+			self.hurt = 1
+			self.is_hurt = True
+			self.hurt_direction = direction
+			self.health -= 1
+			if self.health <= 0:
+				self.dead = True
+			self.hurt_me()
+
+	def hurt_me(self):
 		pass
 
 	def update(self):
