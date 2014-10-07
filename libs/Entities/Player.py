@@ -3,6 +3,8 @@ from pygame.locals import*
 
 from Entity import Entity
 from ..Sprite import *
+from ..TileSystem import TILE_SIZE, round_coords
+from ..common import lerp_pos
 
 
 class Player(Entity):
@@ -32,7 +34,6 @@ class Player(Entity):
 		self.hurt_delay = 60
 		self.hurt_direction = [0,0]
 
-		self.is_dying = False
 		self.dying = 0
 		self.dying_predelay = 30
 		self.dying_length = 120
@@ -52,7 +53,7 @@ class Player(Entity):
 
 	def update(self):
 		#we check to see which direction we'll be moving
-		if not self.dead:
+		if not self.dead and not self.falling:
 			self.vec = [0,0]
 			speed = 3.0
 
@@ -60,7 +61,7 @@ class Player(Entity):
 
 			#Baddie Collision Detection
 			for npc in self.main.world.npcs:
-				if npc.is_bad:
+				if npc.is_bad and not npc.dead:
 					offset = [0,0]
 					if self.rect.colliderect(npc.rect):
 						dif = (npc.rect.left - self.rect.left, npc.rect.top - self.rect.top)
@@ -94,6 +95,11 @@ class Player(Entity):
 								offset[1] *= 10
 								self.__hurt__(1,offset)
 
+			#Pit Detection
+			pos = (float(self.pos[0])/TILE_SIZE, float(self.pos[1])/TILE_SIZE)
+			if not self.main.world.grid.is_legal_coords(pos):
+				self.__fall__()
+
 			#Hurt Update
 			if self.hurt != 0:
 				self.hurt += 1
@@ -114,25 +120,7 @@ class Player(Entity):
 							self.attacking = False
 							update_walk_sprite = True
 						else:
-							#Sword Attack Collision Detection
-							sword_rect = self.get_sword_rect()
-							for npc in self.main.world.npcs:
-								if npc.is_bad:
-									if sword_rect.colliderect(npc.rect):
-										dif = (npc.rect.left - sword_rect.left, npc.rect.top - sword_rect.top)
-										if pygame.mask.from_surface(self.sword_sprite.get_img()).overlap(pygame.mask.from_surface(npc.sprite.get_img()), dif):
-											offset = [0,0]
-											if self.direction == 0:
-												offset = [-1,0]
-											elif self.direction == 2:
-												offset = [1,0]
-											elif self.direction == 1:
-												offset = [0,-1]
-											else:
-												offset = [0,1]
-											offset[0] *= 10
-											offset[1] *= 10
-											npc.__hurt__(1,offset)
+							self.detect_sword_collisions()
 					else:
 						if self.attack - self.attack_length >= self.attack_delay:
 							self.attack = 0
@@ -215,6 +203,7 @@ class Player(Entity):
 							elif self.direction == 2: self.sword_sprite.direction = DIRECTION_RIGHT
 							else: self.sword_sprite.direction = DIRECTION_DOWN
 							self.sword_sprite.set_frame("")
+							self.detect_sword_collisions()
 			else:
 				self.vec = tuple(self.hurt_direction)
 
@@ -236,12 +225,42 @@ class Player(Entity):
 					self.set_sprite_direction()
 					self.sprite.set_frame("walk1")
 
-	def set_sprite_direction(self):
-		if self.direction == 0: direction = DIRECTION_LEFT
-		elif self.direction == 1: direction = DIRECTION_UP
-		elif self.direction == 2: direction = DIRECTION_RIGHT
-		else: direction = DIRECTION_DOWN
-		self.sprite.direction = direction
+			#Update Fall
+			if self.fall != 0:
+				if self.fall < self.fall_length:
+					self.fall += 1
+					self.direction = (self.fall/4)%4
+					self.set_sprite_direction()
+					self.sprite.set_frame("walk1")
+					pos = round_coords((float(self.pos[0])/TILE_SIZE,float(self.pos[1])/TILE_SIZE))
+					pos = [(pos[0]+0.5)*TILE_SIZE, (pos[1]+0.5)*TILE_SIZE]
+					self.pos = lerp_pos(self.pos,
+										pos,
+										0.1)
+				else:
+					self.dead = True
+					self.falling = False
+
+	def detect_sword_collisions(self):
+		#Sword Attack Collision Detection
+		sword_rect = self.get_sword_rect()
+		for npc in self.main.world.npcs:
+			if npc.is_bad and not npc.dead:
+				if sword_rect.colliderect(npc.rect):
+					dif = (npc.rect.left - sword_rect.left, npc.rect.top - sword_rect.top)
+					if pygame.mask.from_surface(self.sword_sprite.get_img()).overlap(pygame.mask.from_surface(npc.sprite.get_img()), dif):
+						offset = [0,0]
+						if self.direction == 0:
+							offset = [-1,0]
+						elif self.direction == 2:
+							offset = [1,0]
+						elif self.direction == 1:
+							offset = [0,-1]
+						else:
+							offset = [0,1]
+						offset[0] *= 10
+						offset[1] *= 10
+						npc.__hurt__(1,offset)
 
 	def move(self):
 		#finally displaces the player
@@ -264,7 +283,7 @@ class Player(Entity):
 		return sword_rect
 
 	def render(self):
-		if not self.dead or self.dying:
+		if not self.dead or self.dying or self.falling:
 			order = 0
 
 			offset = self.main.world.visible_grid.offset
@@ -285,6 +304,10 @@ class Player(Entity):
 					img.fill((255,255,255,192), None, special_flags = BLEND_RGBA_MULT)
 				else:
 					img.fill((255,255,255,64), None, special_flags = BLEND_RGBA_MULT)
+			elif self.falling:
+				img = img.copy()
+				x = int(255*((self.fall_length-self.fall)/float(self.fall_length)))
+				img.fill((x,x,x), None, special_flags = BLEND_RGB_MULT)
 
 			if self.attacking:
 				sword_img = self.sword_sprite.get_img()

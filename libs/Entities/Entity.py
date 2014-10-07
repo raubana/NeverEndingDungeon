@@ -1,6 +1,7 @@
 import pygame
 
 from ..TileSystem import TILE_SIZE
+from ..Sprite import *
 
 class Entity(object):
 	"""
@@ -12,6 +13,7 @@ class Entity(object):
 		self.size = size
 		self.calc_rect()
 		self.dead = False
+		self.is_dying = False
 		self.is_bad = False
 
 		self.is_hurt = False
@@ -19,6 +21,10 @@ class Entity(object):
 		self.hurt_length = 10
 		self.hurt_delay = 60
 		self.hurt_direction = [0,0]
+
+		self.falling = False
+		self.fall = 0
+		self.fall_length = 60
 
 		self.init()
 
@@ -29,18 +35,35 @@ class Entity(object):
 		"""
 		pass
 
-	def __hurt__(self, amount, direction = [0,0]):
-		if self.hurt == 0 and not self.is_hurt:
+	def __hurt__(self, amount, direction = [0,0], force = False):
+		if (self.hurt == 0 and not self.is_hurt) or force:
 			self.hurt = 1
 			self.is_hurt = True
 			self.hurt_direction = direction
-			self.health -= 1
+			self.health -= amount
 			if self.health <= 0:
 				self.dead = True
 			self.hurt_me()
 
+	def __fall__(self):
+		if not self.dead and not self.falling:
+			self.hurt = 0
+			self.is_hurt = False
+			self.health = 0
+			self.dead = True
+			self.falling = True
+			self.fall = 1
+			self.vec = [0,0]
+
 	def hurt_me(self):
 		pass
+
+	def set_sprite_direction(self):
+		if self.direction == 0: direction = DIRECTION_LEFT
+		elif self.direction == 1: direction = DIRECTION_UP
+		elif self.direction == 2: direction = DIRECTION_RIGHT
+		else: direction = DIRECTION_DOWN
+		self.sprite.direction = direction
 
 	def update(self):
 		pass
