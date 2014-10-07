@@ -23,8 +23,8 @@ class Player(Entity):
 
 		self.attacking = False
 		self.attack = 0
-		self.attack_length = 10
-		self.attack_delay = 15
+		self.attack_length = 8
+		self.attack_delay = 12
 
 		self.is_hurt = False
 		self.hurt = 0
@@ -43,10 +43,10 @@ class Player(Entity):
 
 	def hurt_me(self):
 		self.attacking = False
+		self.attack = 0
 		self.sprite.set_frame("1")
 		if self.dead:
 			self.hurt = 0
-			self.is_hurt = False
 			self.is_dying = True
 			self.dying = 1
 
@@ -231,6 +231,7 @@ class Player(Entity):
 					self.dying = 0
 					self.is_dying = False
 				else:
+					self.is_hurt = False
 					self.direction = (self.dying/4)%4
 					self.set_sprite_direction()
 					self.sprite.set_frame("walk1")
