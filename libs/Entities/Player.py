@@ -284,7 +284,7 @@ class Player(Entity):
 				if self.hurt%2 == 0:
 					img.fill((255,255,255,192), None, special_flags = BLEND_RGBA_MULT)
 				else:
-					img.fill((255,255,255,96), None, special_flags = BLEND_RGBA_MULT)
+					img.fill((255,255,255,64), None, special_flags = BLEND_RGBA_MULT)
 
 			if self.attacking:
 				sword_img = self.sword_sprite.get_img()
