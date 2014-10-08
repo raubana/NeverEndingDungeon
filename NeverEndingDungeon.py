@@ -25,13 +25,7 @@ class Main(object):
 
 	def reset(self):
 		self.world = World(self)
-
 		self.music = MusicMan(self)
-		if random.randint(0,1)== 0:
-			self.music.load_music("mmsm")
-		else:
-			self.music.load_music("mmnm")
-		self.music.begin()
 
 	def update(self):
 		for e in self.events:

@@ -19,7 +19,6 @@ class World(object):
 	def __init__(self, main):
 		self.main = main
 
-
 		self.grid = Grid(main, (11,9))
 		for y in xrange(self.grid.gridsize[1]):
 			for x in xrange(self.grid.gridsize[0]):
@@ -49,6 +48,25 @@ class World(object):
 		self.sounds["player_hurt"] = pygame.mixer.Sound("snds/sfx/player_hurt.wav")
 		self.sounds["player_death"] = pygame.mixer.Sound("snds/sfx/player_death.wav")
 		self.sounds["sword_swing"] = pygame.mixer.Sound("snds/sfx/sword_swing.wav")
+
+		self.load_main_script()
+
+	def load_main_script(self):
+		self.main_script = self.load_script("main_script")
+		self.main_script_index = 0
+
+	def load_script(self, filename):
+		f = open("data/scripts/"+filename+".txt")
+		s = f.read().split("\n")
+		f.close()
+		new_s = []
+		while len(s) > 0:
+			line = s.pop(0).strip()
+			if line.startswith("script "): # This allows for compounding of separate scripts.
+				s = self.load_script(line[len("script "):]) + s
+			else:
+				new_s.append(line)
+		return new_s
 
 	def play_sound(self, soundname, offset):
 		#first we check if the sound exists
@@ -86,6 +104,38 @@ class World(object):
 			next_grid.tiles.append(row)
 		return next_grid
 
+	def parse_script(self):
+		stop = False
+		while not stop:
+			if self.main_script_index < len(self.main_script):
+				line = self.main_script[self.main_script_index]
+				print line
+				if line.startswith("load_song "):
+					song = line[len("load_song "):]
+					self.main.music.load_music(song)
+				elif line == "play_music":
+					self.main.music.begin()
+				elif line.startswith("cue_music "):
+					cued = line[len("cue_music "):]
+					self.main.music.cue(int(cued))
+				elif line.startswith("hard_cue_music "):
+					cued = line[len("hard_cue_music "):]
+					self.main.music.cue(int(cued), True)
+				elif line.startswith("wait "):
+					wait = line[len("wait "):]
+					if wait.startswith("current_music "):
+						music = int(wait[len("current_music "):])
+						if self.main.music.current != music:
+							stop = True
+					elif wait.startswith("music_pos "):
+						pos = float(wait[len("music_pos "):])
+						if not (self.main.music.prev_sound_pos < pos and (self.main.music.sound_pos >= pos or self.main.music.sound_pos < self.main.music.prev_sound_pos)):
+							stop = True
+				if not stop:
+					self.main_script_index += 1
+			else:
+				stop = True
+
 	def update(self):
 		"""
 		World.update - Called by Main.
@@ -93,9 +143,14 @@ class World(object):
 		Dead entities are pruned in this function.
 		"""
 
+		#Updates the script
+		self.parse_script()
+
 		if not self.player.dead:
 			if self.transition != None:
 				self.transition.update()
+				#if self.transition.done_transitioning:
+				#	self.transition = None
 				if not self.transition.done_transitioning:
 					if self.transition.stage == 2 and self.transition.delay == 0:
 						for x in xrange(5):
@@ -116,8 +171,6 @@ class World(object):
 					next_grid = self.prep_next_grid()
 					self.transition = HintedTransition(self.main, self.grid, next_grid, self.visible_grid, flat_delay=400)
 			else:
-				if self.main.music.current == 0 and self.main.music.sound_pos >= self.main.music.intro_loop_beats-1:
-					self.main.music.cue(1)
 				if self.main.music.current == 1 and self.main.music.sound_pos >= self.main.music.intro_trans_beats-1:
 					next_grid = self.prep_next_grid()
 					self.transition = HintedTransition(self.main, self.grid, next_grid, self.visible_grid, flat_delay=0, flat_len=1)

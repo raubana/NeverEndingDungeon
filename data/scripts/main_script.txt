@@ -1,0 +1,3 @@
+load_song mmnm
+play_music
+cue_music 1
