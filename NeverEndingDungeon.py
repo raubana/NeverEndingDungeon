@@ -1,10 +1,14 @@
 import pygame
 from pygame.locals import*
+from libs.MusicMan import MusicMan
+
+pygame.mixer.pre_init(frequency = 44010, buffer = 2**9)
+
 pygame.init()
 
 from libs.World import World
 
-import time
+import time, random
 
 
 # ====== CLASSES ======
@@ -22,12 +26,20 @@ class Main(object):
 	def reset(self):
 		self.world = World(self)
 
+		self.music = MusicMan(self)
+		if random.randint(0,1)== 0:
+			self.music.load_music("mmsm")
+		else:
+			self.music.load_music("mmnm")
+		self.music.begin()
+
 	def update(self):
 		for e in self.events:
 			if e.type == KEYDOWN and e.key == K_r:
 				self.reset()
 
 		self.world.update()
+		self.music.update()
 
 	def move(self):
 		self.world.move()

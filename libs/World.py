@@ -69,10 +69,32 @@ class World(object):
 		Updates all entities and handles/performs events.
 		Dead entities are pruned in this function.
 		"""
-		if self.transition != None and not self.player.dead:
-			self.transition.update()
-			if self.transition.done_transitioning:
-				self.transition = None
+
+		if not self.player.dead:
+			if self.transition != None:
+				self.transition.update()
+				print self.transition.delay, self.transition.stage
+				if self.transition.done_transitioning:
+					self.transition = None
+				else:
+					if self.transition.stage == 2 and self.transition.delay == 0:
+						print "SPAWNED!!"
+						pos = ((self.grid.gridsize[0]*0.5)*TILE_SIZE, (self.grid.gridsize[0]*0.5)*TILE_SIZE)
+						for x in xrange(5):
+							self.npcs.append(Baddie1(self.main, pos))
+
+					if self.transition.stage >= 2 or self.transition.stage == 0:
+						if len(self.npcs) == 0:
+							if self.main.music.current == 2:
+								self.main.music.cue(3, force=True)
+						else:
+							if self.main.music.current == 3:
+								self.main.music.cue(2, force=True)
+			else:
+				next_grid = self.prep_next_grid()
+				self.transition = HintedTransition(self.main, self.grid, next_grid, self.visible_grid, flat_delay=360)
+				if self.main.music.current == 0:
+					self.main.music.cue(1)
 
 		#Updates the player.
 		self.player.update()
@@ -98,24 +120,17 @@ class World(object):
 			if self.player_is_alive:
 				self.player_is_alive = False
 				self.visible_grid.apply_filter((255,0,0), BLEND_RGB_MIN)
-
+				self.main.music.stop()
+		"""
 		for e in self.main.events:
-			if e.type == KEYDOWN and e.key in (K_o,K_p):
-				self.transition = 0
-				self.transitioning = True
-				next_grid = self.prep_next_grid()
-				if e.key == K_o:
-					trans = HintedTransition
-				else:
-					trans = pick_random_transition()
-				self.transition = trans(self.main, self.grid, next_grid, self.visible_grid)
-			elif e.type == MOUSEBUTTONDOWN and e.button == 1:
+			if e.type == MOUSEBUTTONDOWN and e.button == 1:
 				pos = (self.visible_grid.offset[0]-e.pos[0]+(TILE_SIZE),
 						self.visible_grid.offset[1]-e.pos[1]+(TILE_SIZE))
 				pos = offset_to_coords(pos)
 				pos = round_coords(pos)
 				pos = ((pos[0]+0.5)*TILE_SIZE, (pos[1]+0.5)*TILE_SIZE)
 				self.npcs.append(Baddie1(self.main, pos))
+		"""
 
 	def move(self):
 		"""

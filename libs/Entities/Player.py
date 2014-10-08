@@ -39,7 +39,7 @@ class Player(Entity):
 		self.dying_length = 120
 
 		self.prev_pos = tuple(self.pos)
-		self.health = 4
+		self.health = 8
 		self.vec = [0,0]
 
 	def hurt_me(self):
@@ -62,7 +62,7 @@ class Player(Entity):
 
 			#Baddie Collision Detection
 			for npc in self.main.world.npcs:
-				if npc.is_bad and not npc.dead:
+				if npc.is_bad and not npc.dead and not npc.is_hurt:
 					offset = [0,0]
 					if self.rect.colliderect(npc.rect):
 						dif = (npc.rect.left - self.rect.left, npc.rect.top - self.rect.top)
