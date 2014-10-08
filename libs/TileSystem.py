@@ -97,8 +97,9 @@ class Grid(object):
 		pos = round_coords(coords)
 		return not self.tiles[pos[1]][pos[0]].is_a_pit
 
-	def get_path(self, start_coords, end_coords, avoid_mob=True):
+	def get_path(self, start_coords, end_coords, avoid_mob=True, shit_path_freq=0.1):
 		#We also assume that the mobs can not go diagonally.
+		#Shit paths are when the algorithm take into account stupid and often longer paths.
 		start = (int(start_coords[0]),int(start_coords[1]))
 		end = (int(end_coords[0]),int(end_coords[1]))
 
@@ -118,7 +119,7 @@ class Grid(object):
 				if best_score == None or tile[3] < best_score:
 					best_score = tile[3]
 					best_scores = [tile]
-				elif tile[3] <= best_score+1: #This is to add a little randomness, so that mob don't overlap too often.
+				elif tile[3] <= best_score+1 and random.random() < shit_path_freq: #This is to add a little randomness, so that mob don't overlap too often.
 					best_scores.append(tile)
 			#now we pick from those
 			pick = random.choice(best_scores)
@@ -178,16 +179,19 @@ class Grid(object):
 
 		new_score = int(prev_distance)
 
-		new_score += abs(end[0]-target[0])
-		new_score += abs(end[1]-target[1])
+		dif = (end[0]-target[0], end[1]-target[1])
+		dist = (dif[0]**2 + dif[1]**2)**0.5
+
+		new_score += dist
 
 		new_score += abs(end[0]-prev[0])
 		new_score += abs(end[1]-prev[1])
 
 		if avoid_mob:
 			occupied = False
-			rect = pygame.Rect([end_coords[0]*TILE_SIZE,end_coords[1]*TILE_SIZE,TILE_SIZE,TILE_SIZE])
+			#rect = pygame.Rect([end_coords[0]*TILE_SIZE,end_coords[1]*TILE_SIZE,TILE_SIZE,TILE_SIZE])
 			for npc in self.main.world.npcs:
+				"""
 				if npc.rect.colliderect(rect):
 					left = rect.right - npc.rect.left
 					top = rect.bottom - npc.rect.top
@@ -196,8 +200,10 @@ class Grid(object):
 
 					m = min(left,top,right,bottom)
 					if m > 0:
-						occupied = True
-						break
+				"""
+				if end_coords == npc.coords:
+					occupied = True
+					break
 			if occupied:
 				new_score += 10
 

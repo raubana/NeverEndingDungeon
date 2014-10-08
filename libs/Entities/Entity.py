@@ -54,8 +54,12 @@ class Entity(object):
 			self.falling = True
 			self.fall = 1
 			self.vec = [0,0]
+			self.fall_me()
 
 	def hurt_me(self):
+		pass
+
+	def fall_me(self):
 		pass
 
 	def set_sprite_direction(self):

@@ -25,6 +25,8 @@ class MusicMan(object):
 		self.cued = None #0 intro, 1 intro to main, 2 main, 3 main (quiet)
 		self.synced = True
 
+		self.volume = 0.4
+
 	def load_music(self, song):
 		f = open("snds/songs/"+song+"/bpm.txt")
 		self.bpm = float(f.readline())
@@ -32,7 +34,6 @@ class MusicMan(object):
 		self.intro_trans_beats = float(f.readline())
 		self.main_loop_beats = float(f.readline())
 		self.main_loop_quiet_beats = float(f.readline())
-
 
 		self.songname = song
 
@@ -52,6 +53,7 @@ class MusicMan(object):
 		pygame.mixer.music.load(self.get_current_soundname())
 		pygame.mixer.music.play(-1)
 		self.sound_start = time.time()
+		pygame.mixer.music.set_volume(self.volume)
 
 		self.prev_beat = 0.0
 
@@ -91,8 +93,8 @@ class MusicMan(object):
 							self.cued = None
 						pygame.mixer.music.load(self.get_current_soundname())
 						pygame.mixer.music.play(-1, (60.0/self.bpm)*self.sound_pos)
-						self.sound_pos = self.sound_pos
 						self.sound_start = time.time()-(60.0/self.bpm)*self.sound_pos
+						pygame.mixer.music.set_volume(self.volume)
 
 			self.prev_beat = float(self.beat)
 			self.prev_sound_pos = float(self.sound_pos)

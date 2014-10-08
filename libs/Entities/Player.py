@@ -7,6 +7,8 @@ from ..TileSystem import TILE_SIZE, round_coords
 from ..common import lerp_pos
 
 
+DEBUG_PLAYER_INVINCIBLE = False
+
 class Player(Entity):
 	"""
 	This is the parent Player class.
@@ -25,8 +27,8 @@ class Player(Entity):
 
 		self.attacking = False
 		self.attack = 0
-		self.attack_length = 10
-		self.attack_delay = 14
+		self.attack_length = 6
+		self.attack_delay = 6
 
 		self.is_hurt = False
 		self.hurt = 0
@@ -43,14 +45,35 @@ class Player(Entity):
 		self.vec = [0,0]
 
 	def hurt_me(self):
-		self.attacking = False
-		self.attack = 0
-		self.sprite.set_frame("1")
-		if self.dead:
+		if DEBUG_PLAYER_INVINCIBLE:
+			self.dead = False
+			self.health = 100
 			self.hurt = 0
 			self.is_hurt = False
-			self.is_dying = True
-			self.dying = 1
+			self.is_dying = False
+			self.dying = 0
+		else:
+			self.attacking = False
+			self.attack = 0
+			self.sprite.set_frame("1")
+			if self.dead:
+				self.hurt = 0
+				self.is_hurt = False
+				self.is_dying = True
+				self.dying = 1
+			else:
+				self.main.world.play_sound("player_hurt", self.pos)
+
+	def fall_me(self):
+		if DEBUG_PLAYER_INVINCIBLE:
+			self.falling = False
+			self.fall = 0
+			self.dead = False
+			self.health = 100
+			self.hurt = 0
+			self.is_hurt = False
+			self.is_dying = False
+			self.dying = 0
 
 	def update(self):
 		#we check to see which direction we'll be moving
@@ -92,8 +115,8 @@ class Player(Entity):
 										offset = [0,1]
 									else:
 										offset = [0,-1]
-								offset[0] *= 3
-								offset[1] *= 3
+								offset[0] *= 5
+								offset[1] *= 5
 								self.__hurt__(1,offset)
 
 			#Pit Detection
@@ -205,6 +228,7 @@ class Player(Entity):
 							else: self.sword_sprite.direction = DIRECTION_DOWN
 							self.sword_sprite.set_frame("")
 							self.detect_sword_collisions()
+							self.main.world.play_sound("sword_swing", self.pos)
 			else:
 				self.vec = tuple(self.hurt_direction)
 
@@ -231,6 +255,8 @@ class Player(Entity):
 				self.fall += 1
 				if self.fall < self.dying_predelay:
 					pass
+				elif self.fall == self.dying_predelay:
+					self.main.world.play_sound("falling", self.pos)
 				elif self.fall - self.dying_predelay < self.fall_length:
 					self.direction = ((self.fall-self.dying_predelay)/4)%4
 					self.set_sprite_direction()
@@ -261,8 +287,8 @@ class Player(Entity):
 							offset = [0,-1]
 						else:
 							offset = [0,1]
-						offset[0] *= 5
-						offset[1] *= 5
+						offset[0] *= 7
+						offset[1] *= 7
 						npc.__hurt__(1,offset)
 
 	def calc_rect(self):

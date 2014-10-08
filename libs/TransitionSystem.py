@@ -129,8 +129,8 @@ class Transition(object):
 
 
 class HintedTransition(object):
-	def __init__(self, main, old_grid, new_grid, visible_grid, flat_delay = 15, flat_len = 60, hint_delay = 0,
-				 hint_len = 30, trans_delay = 240, trans_len = 120, flat_type = None,
+	def __init__(self, main, old_grid, new_grid, visible_grid, flat_delay = 0, flat_len = 30, hint_delay = 0,
+				 hint_len = 30, trans_delay = 240, trans_len = 90, flat_type = None,
 				 hint_type = None, trans_type = None):
 		#NOTE: NEVER MAKE THE LENGTH OF A TRANSITION LESS THAN 1!!
 

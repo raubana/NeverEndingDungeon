@@ -24,7 +24,7 @@ class Baddie1(Entity):
 		self.health = 2
 		self.vec = [0,0]
 
-		self.path_update_length = 30
+		self.path_update_length = 60
 		self.path_update = int(self.path_update_length)-2
 		self.target_pos = None
 		self.path = []
@@ -32,17 +32,24 @@ class Baddie1(Entity):
 		self.is_bad = True
 
 	def hurt_me(self):
-		#TODO: Make hurt sound here.
 		self.sprite.set_frame("1")
 		self.path_update = int(self.path_update_length)
+		if self.dead:
+			self.main.world.play_sound("enemy_death", self.pos)
+		else:
+			self.main.world.play_sound("enemy_hurt", self.pos)
+
+	def fall_me(self):
+		self.main.world.play_sound("falling", self.pos)
 
 	def update(self):
 		#we check to see which direction we'll be moving
 		self.vec = [0,0]
 		speed = 1.5
 
-		if not self.dead and not self.falling:
+		self.coords = round_coords((float(self.pos[0])/TILE_SIZE, float(self.pos[1])/TILE_SIZE))
 
+		if not self.dead and not self.falling:
 			#Animation Update
 			self.anim += 1
 			self.anim %= self.anim_length*2
@@ -88,12 +95,20 @@ class Baddie1(Entity):
 							self.vec = [0, -speed]
 					self.set_sprite_direction()
 					#Check if we've reached this pos or if this target position is bad.
-					if max(abs(dif[0]), abs(dif[1])) <= speed*2:
+					mx = abs(dif[0])
+					my = abs(dif[1])
+					m = max(mx, my)
+					if m <= speed*2 or m >= TILE_SIZE*1.5 or (mx > TILE_SIZE*0.5 and my > TILE_SIZE*0.5):
 						self.target_pos = None
 					else:
 						pos = (float(self.target_pos[0])/TILE_SIZE, float(self.target_pos[1])/TILE_SIZE)
+						pos = round_coords(pos)
 						if not self.main.world.grid.is_legal_coords(pos):
 							self.target_pos = None
+						else:
+							tile = self.main.world.grid.tiles[int(pos[1])][int(pos[0])]
+							if tile.solid:
+								self.target_pos = None
 				else:
 					if len(self.path) > 0:
 						self.target_pos = self.path.pop(0)
@@ -111,10 +126,10 @@ class Baddie1(Entity):
 				if self.path_update >= self.path_update_length:
 					self.path_update = 0
 					if self.target_pos != None:
-						pos = self.target_pos
+						pos = round_coords((float(self.target_pos[0])/TILE_SIZE, float(self.target_pos[1])/TILE_SIZE))
 					else:
-						pos = self.pos
-					self.path = self.main.world.grid.get_path((pos[0]/TILE_SIZE, pos[1]/TILE_SIZE),
+						pos = self.coords
+					self.path = self.main.world.grid.get_path(pos,
 									(self.main.world.player.pos[0]/TILE_SIZE, self.main.world.player.pos[1]/TILE_SIZE))
 		else:
 			#Update Fall
