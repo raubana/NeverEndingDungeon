@@ -73,7 +73,6 @@ class World(object):
 		if not self.player.dead:
 			if self.transition != None:
 				self.transition.update()
-				print self.transition.delay, self.transition.stage
 				if self.transition.done_transitioning:
 					self.transition = None
 				else:
@@ -82,6 +81,8 @@ class World(object):
 						pos = ((self.grid.gridsize[0]*0.5)*TILE_SIZE, (self.grid.gridsize[0]*0.5)*TILE_SIZE)
 						for x in xrange(5):
 							self.npcs.append(Baddie1(self.main, pos))
+						self.player.is_hurt = True
+						self.player.hurt = self.player.hurt_length
 
 					if self.transition.stage >= 2 or self.transition.stage == 0:
 						if len(self.npcs) == 0:

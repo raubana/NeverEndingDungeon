@@ -31,7 +31,7 @@ class Player(Entity):
 		self.is_hurt = False
 		self.hurt = 0
 		self.hurt_length = 10
-		self.hurt_delay = 45
+		self.hurt_delay = 90
 		self.hurt_direction = [0,0]
 
 		self.dying = 0
