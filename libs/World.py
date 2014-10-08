@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import*
 
-from TileSystem import Grid, VisibleGrid, Tile, WallTile, PitTile, TILE_SIZE
+from TileSystem import Grid, VisibleGrid, Tile, WallTile, PitTile, TILE_SIZE, round_coords, offset_to_coords
 from Entities.Player import Player
 from Entities.Baddie1 import Baddie1
 from common import lerp_pos, lerp_colors
@@ -19,7 +19,7 @@ class World(object):
 		self.grid = Grid(main)
 
 		#For testing purposes.
-		self.grid.gridsize = (5,5)
+		self.grid.gridsize = (1,1)
 		self.grid.tiles = []
 		for y in xrange(self.grid.gridsize[1]):
 			row = []
@@ -32,14 +32,12 @@ class World(object):
 
 		self.visible_grid = VisibleGrid(main)
 
-		self.player = Player(main, [(self.grid.gridsize[0]*TILE_SIZE)/2, (self.grid.gridsize[1]*TILE_SIZE)/2], [24,24])
+		self.player = Player(main, [(self.grid.gridsize[0]*TILE_SIZE)/2, (self.grid.gridsize[1]*TILE_SIZE)/2], [28,28])
+		self.player_is_alive = True
 
 		self.npcs = []
 		self.particles = []
-		"""
-		self.npcs.append(Baddie1(main, (TILE_SIZE/2,TILE_SIZE/2)))
-		self.npcs.append(Baddie1(main, (((self.grid.gridsize[0]-1)*TILE_SIZE)+TILE_SIZE/2,((self.grid.gridsize[1]-1)*TILE_SIZE)+TILE_SIZE/2)))
-		"""
+
 		self.preferred_offset = (-((self.grid.gridsize[0]*TILE_SIZE*0.5) - (self.main.screen_size[0]/2)), -((self.grid.gridsize[1]*TILE_SIZE*0.5) - (self.main.screen_size[1]/2)))
 
 		#new_offset = ((0) - (self.main.screen_size[0]/2), (0) - (self.main.screen_size[1]/2))
@@ -47,7 +45,7 @@ class World(object):
 
 	def prep_next_grid(self):
 		#We set the current grid to be a flat area.
-		new_size = (random.randint(6,10), random.randint(6,10))
+		new_size = (random.randint(8,12), random.randint(8,12))
 		#We setup the next grid.
 		next_grid = Grid(self.main)
 		next_grid.gridsize = new_size
@@ -63,7 +61,7 @@ class World(object):
 					tile = Tile(self.main)
 				row.append(tile)
 			next_grid.tiles.append(row)
-		self.transition = HintedTransition(self.main, self.grid, next_grid, self.visible_grid)
+		return next_grid
 
 	def update(self):
 		"""
@@ -96,12 +94,28 @@ class World(object):
 				if self.particles[i].dead:
 					del self.particles[i]
 				i -= 1
+		else:
+			if self.player_is_alive:
+				self.player_is_alive = False
+				self.visible_grid.apply_filter((255,0,0), BLEND_RGB_MIN)
 
 		for e in self.main.events:
-			if e.type == KEYDOWN and e.key == K_p:
+			if e.type == KEYDOWN and e.key in (K_o,K_p):
 				self.transition = 0
 				self.transitioning = True
-				self.prep_next_grid()
+				next_grid = self.prep_next_grid()
+				if e.key == K_o:
+					trans = HintedTransition
+				else:
+					trans = pick_random_transition()
+				self.transition = trans(self.main, self.grid, next_grid, self.visible_grid)
+			elif e.type == MOUSEBUTTONDOWN and e.button == 1:
+				pos = (self.visible_grid.offset[0]-e.pos[0]+(TILE_SIZE),
+						self.visible_grid.offset[1]-e.pos[1]+(TILE_SIZE))
+				pos = offset_to_coords(pos)
+				pos = round_coords(pos)
+				pos = ((pos[0]+0.5)*TILE_SIZE, (pos[1]+0.5)*TILE_SIZE)
+				self.npcs.append(Baddie1(self.main, pos))
 
 	def move(self):
 		"""
@@ -122,7 +136,7 @@ class World(object):
 		#then we check if the player is almost going off of the screen.
 		pl = self.player
 		offset = [0,0]
-		inset = 200
+		inset = 300
 		rect = pygame.Rect([-new_offset[0]+inset,
 							-new_offset[1]+inset,
 							self.main.screen_size[0]-inset-inset,

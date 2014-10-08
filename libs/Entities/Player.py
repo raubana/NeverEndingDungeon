@@ -25,17 +25,17 @@ class Player(Entity):
 
 		self.attacking = False
 		self.attack = 0
-		self.attack_length = 8
-		self.attack_delay = 12
+		self.attack_length = 10
+		self.attack_delay = 14
 
 		self.is_hurt = False
 		self.hurt = 0
 		self.hurt_length = 10
-		self.hurt_delay = 60
+		self.hurt_delay = 45
 		self.hurt_direction = [0,0]
 
 		self.dying = 0
-		self.dying_predelay = 30
+		self.dying_predelay = 60
 		self.dying_length = 120
 
 		self.prev_pos = tuple(self.pos)
@@ -48,6 +48,7 @@ class Player(Entity):
 		self.sprite.set_frame("1")
 		if self.dead:
 			self.hurt = 0
+			self.is_hurt = False
 			self.is_dying = True
 			self.dying = 1
 
@@ -91,8 +92,8 @@ class Player(Entity):
 										offset = [0,1]
 									else:
 										offset = [0,-1]
-								offset[0] *= 10
-								offset[1] *= 10
+								offset[0] *= 3
+								offset[1] *= 3
 								self.__hurt__(1,offset)
 
 			#Pit Detection
@@ -227,9 +228,11 @@ class Player(Entity):
 
 			#Update Fall
 			if self.fall != 0:
-				if self.fall < self.fall_length:
-					self.fall += 1
-					self.direction = (self.fall/4)%4
+				self.fall += 1
+				if self.fall < self.dying_predelay:
+					pass
+				elif self.fall - self.dying_predelay < self.fall_length:
+					self.direction = ((self.fall-self.dying_predelay)/4)%4
 					self.set_sprite_direction()
 					self.sprite.set_frame("walk1")
 					pos = round_coords((float(self.pos[0])/TILE_SIZE,float(self.pos[1])/TILE_SIZE))
@@ -258,9 +261,15 @@ class Player(Entity):
 							offset = [0,-1]
 						else:
 							offset = [0,1]
-						offset[0] *= 10
-						offset[1] *= 10
+						offset[0] *= 5
+						offset[1] *= 5
 						npc.__hurt__(1,offset)
+
+	def calc_rect(self):
+		self.rect = pygame.Rect([self.pos[0]-(self.size[0]/2),
+								 self.pos[1]-int(self.size[1]*0.75),
+								 self.size[0],
+								 self.size[1]])
 
 	def move(self):
 		#finally displaces the player
@@ -268,18 +277,19 @@ class Player(Entity):
 		self.pos[0] += self.vec[0]
 		self.pos[1] += self.vec[1]
 		self.calc_rect()
-		self.do_tile_collision_detection()
+		if not self.dead:
+			self.do_tile_collision_detection()
 
 	def get_sword_rect(self):
 		sword_img = self.sword_sprite.get_img()
 		if self.sword_sprite.direction == DIRECTION_LEFT:
-			sword_rect = sword_img.get_rect(midright = (self.pos[0]-12,self.pos[1]))
+			sword_rect = sword_img.get_rect(midright = (self.rect.centerx-12,self.rect.centery))
 		elif self.sword_sprite.direction == DIRECTION_UP:
-			sword_rect = sword_img.get_rect(midbottom = (self.pos[0],self.pos[1]-12))
+			sword_rect = sword_img.get_rect(midbottom = (self.rect.centerx,self.rect.centery-12))
 		elif self.sword_sprite.direction == DIRECTION_RIGHT:
-			sword_rect = sword_img.get_rect(midleft = (self.pos[0]+12,self.pos[1]))
+			sword_rect = sword_img.get_rect(midleft = (self.rect.centerx+12,self.rect.centery))
 		elif self.sword_sprite.direction == DIRECTION_DOWN:
-			sword_rect = sword_img.get_rect(midtop = (self.pos[0],self.pos[1]+12))
+			sword_rect = sword_img.get_rect(midtop = (self.rect.centerx,self.rect.centery+12))
 		return sword_rect
 
 	def render(self):
@@ -287,7 +297,7 @@ class Player(Entity):
 			order = 0
 
 			offset = self.main.world.visible_grid.offset
-			pos = (self.pos[0]+offset[0], self.pos[1]+offset[1])
+			pos = (self.rect.centerx+offset[0], self.rect.centery+offset[1])
 			pos = (int(pos[0]), int(pos[1]))
 			img = self.sprite.get_img()
 			rect = img.get_rect(center = pos)
@@ -304,10 +314,10 @@ class Player(Entity):
 					img.fill((255,255,255,192), None, special_flags = BLEND_RGBA_MULT)
 				else:
 					img.fill((255,255,255,64), None, special_flags = BLEND_RGBA_MULT)
-			elif self.falling:
+			elif self.falling and self.fall >= self.dying_predelay:
 				img = img.copy()
-				x = int(255*((self.fall_length-self.fall)/float(self.fall_length)))
-				img.fill((x,x,x), None, special_flags = BLEND_RGB_MULT)
+				x = int(255*((self.fall_length-(self.fall-self.dying_predelay))/float(self.fall_length)))
+				img.fill((255,255,255,x), None, special_flags = BLEND_RGBA_MULT)
 
 			if self.attacking:
 				sword_img = self.sword_sprite.get_img()

@@ -139,7 +139,8 @@ class Baddie1(Entity):
 		self.pos[0] += self.vec[0]
 		self.pos[1] += self.vec[1]
 		self.calc_rect()
-		self.do_tile_collision_detection()
+		if not self.dead:
+			self.do_tile_collision_detection()
 
 	def render(self):
 		offset = self.main.world.visible_grid.offset
@@ -154,6 +155,6 @@ class Baddie1(Entity):
 		elif self.falling:
 			img = img.copy()
 			x = int(255*((self.fall_length-self.fall)/float(self.fall_length)))
-			img.fill((x,x,x), None, special_flags = BLEND_RGB_MULT)
+			img.fill((255,255,255,x), None, special_flags = BLEND_RGBA_MULT)
 
 		self.main.screen.blit(img, rect)

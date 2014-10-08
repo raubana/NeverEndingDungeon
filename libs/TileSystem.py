@@ -11,9 +11,14 @@ import random, math
 # ====== CONSTANTS ======
 TILE_SIZE = 48  # The 2D size of a side of a single tile in pixels.
 
-TILE_FLOOR_COLOR = (192,192,192)
-TILE_WALLTILE_COLOR = (192,192,96)
+TILE_FLOOR_COLOR = (96,96,96)
+TILE_FLATTENED_COLOR = (127,127,127)
+TILE_WALLTILE_COLOR = (192,32,32)
 TILE_PIT_COLOR = (0,0,0)
+
+OUTLINE_NORMAL = 1
+OUTLINE_OUTSET = 2
+OUTLINE_INSET = 3
 
 
 DEBUG_FORCE_FULL_RERENDER = False
@@ -29,20 +34,33 @@ def round_coords(coords):
 	return (int(math.floor(coords[0])), int(math.floor(coords[1])))
 
 def get_flattened_grid(grid, size = None):
-	if not size:
+	if size == None:
 		size = grid.gridsize
 	new_grid = Grid(grid.main)
-	new_grid.gridsize = list(grid.gridsize)
+	new_grid.gridsize = size
 	new_grid.tiles = []
 	for y in xrange(size[1]):
 		row = []
 		for x in xrange(size[0]):
+			is_pit = False
+			is_solid = False
 			new_tile = Tile(grid.main)
-			if x < size[0] and y < size[1]:
+			new_tile.color = TILE_FLATTENED_COLOR
+			if x < grid.gridsize[0] and y < grid.gridsize[1]:
 				color = grid.tiles[y][x].color
+				if grid.tiles[y][x].is_a_pit:
+					is_pit = True
+				elif grid.tiles[y][x].solid:
+					is_solid = True
 			else:
 				color = TILE_PIT_COLOR
-			new_tile.color = lerp_colors(new_tile.color,color,0.25)
+				is_pit = True
+			new_tile.color = lerp_colors(new_tile.color,color,0.5)
+			if is_pit:
+				new_tile.outline_type = OUTLINE_NORMAL
+				new_tile.outline_strength = 0.025
+			else:
+				new_tile.outline_type = OUTLINE_OUTSET
 			row.append(new_tile)
 		new_grid.tiles.append(row)
 	return new_grid
@@ -186,6 +204,7 @@ class Grid(object):
 		return new_score
 
 
+
 class Tile(object):
 	def __init__(self, main):
 		self.main = main
@@ -194,6 +213,9 @@ class Tile(object):
 		self.flag_for_rerender()
 		self.rendered_surface = pygame.Surface((TILE_SIZE,TILE_SIZE))
 		self.color = copy_color(TILE_FLOOR_COLOR)
+		self.outline_strength = 0.1
+		self.outline_size = 1
+		self.outline_type = OUTLINE_OUTSET
 		self.init()
 
 	def init(self):
@@ -211,23 +233,42 @@ class Tile(object):
 		if self.flagged_for_rerender:
 			self.flagged_for_rerender = False
 			color = self.color
-			self.rendered_surface.fill(color)
-			pygame.draw.rect(self.rendered_surface, (color[0]/2, color[1]/2, color[2]/2), (0,0,TILE_SIZE,TILE_SIZE), 1)
+			if self.outline_size > 0:
+				if self.outline_type == OUTLINE_NORMAL:
+					self.rendered_surface.fill(color)
+					outline_color = lerp_colors(color, (0,0,0), self.outline_strength)
+					pygame.draw.rect(self.rendered_surface, outline_color, (0,0,TILE_SIZE,TILE_SIZE), self.outline_size)
+				elif self.outline_type in (OUTLINE_INSET, OUTLINE_OUTSET):
+					self.rendered_surface.fill(lerp_colors(color, (0,0,0), self.outline_strength*0.5))
+					c1 = lerp_colors(color, (255,255,255), self.outline_strength*0.25)
+					c2 = lerp_colors(color, (0,0,0), self.outline_strength)
+					if self.outline_type == OUTLINE_INSET:
+						c1,c2 = c2,c1
+					p1 = (self.outline_size, TILE_SIZE-self.outline_size)
+					p2 = (TILE_SIZE-self.outline_size, self.outline_size)
+					p3 = (self.outline_size,self.outline_size)
+					p4 = (TILE_SIZE-self.outline_size,TILE_SIZE-self.outline_size)
+					pygame.draw.polygon(self.rendered_surface, c1, ((0,0),(TILE_SIZE,0),p2,p3,p1,(0,TILE_SIZE)))
+					pygame.draw.polygon(self.rendered_surface, c2, ((TILE_SIZE,TILE_SIZE),(0,TILE_SIZE),p1,p4,p2,(TILE_SIZE,0)))
 
-	def render(self, surface, pos, force = False):
+	def render(self, surface, pos):
 		self.rerender()
 		surface.blit(self.rendered_surface, pos)
-
 
 class WallTile(Tile):
 	def init(self):
 		self.solid = True
 		self.color = copy_color(TILE_WALLTILE_COLOR)
+		self.outline_strength = 0.8
+		self.outline_size = 2
+		self.outline_type = OUTLINE_OUTSET
 
 class PitTile(Tile):
 	def init(self):
 		self.is_a_pit = True
 		self.color = copy_color(TILE_PIT_COLOR)
+		self.outline_type = OUTLINE_INSET
+		self.outline_size = 0
 
 
 
@@ -255,6 +296,14 @@ class VisibleGrid(object):
 
 		self.coords = (0, 0) # in tiles, relative to the origin of the actual grid.
 		self.prev_coords = (0, 0)
+
+		self.filter = 0
+		self.filter_color = (255,255,255)
+
+	def apply_filter(self, filter_color, filter_type):
+		self.filter = filter_type
+		self.filter_color = filter_color
+		self.rendered_surface.fill(filter_color, None, filter_type)
 
 	def calc_gridsize(self):
 		return (self.main.screen_size[0] / TILE_SIZE + 2, self.main.screen_size[1] / TILE_SIZE + 2)
@@ -317,7 +366,10 @@ class VisibleGrid(object):
 							# We tell the tile to render to the surface.
 							tile.render(self.rendered_surface, (x*TILE_SIZE,y*TILE_SIZE))
 						else:
-							self.rendered_surface.fill((random.randint(0,4),random.randint(0,4),random.randint(0,4)),(x*TILE_SIZE,y*TILE_SIZE,TILE_SIZE,TILE_SIZE))
+							self.rendered_surface.fill((0,0,0),(x*TILE_SIZE,y*TILE_SIZE,TILE_SIZE,TILE_SIZE))
+
+					if self.filter != 0:
+						self.rendered_surface.fill(self.filter_color, (x*TILE_SIZE,y*TILE_SIZE, TILE_SIZE, TILE_SIZE), special_flags=self.filter)
 
 	def render(self):
 		"""

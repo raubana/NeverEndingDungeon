@@ -19,7 +19,7 @@ class Entity(object):
 		self.is_hurt = False
 		self.hurt = 0
 		self.hurt_length = 10
-		self.hurt_delay = 60
+		self.hurt_delay = 30
 		self.hurt_direction = [0,0]
 
 		self.falling = False
@@ -98,6 +98,9 @@ class Entity(object):
 							if abs(offset[0]) < right: offset[0] = -right
 						elif bottom == m:
 							if abs(offset[1]) < bottom: offset[1] = -bottom
+
+						if m >= TILE_SIZE/2:
+							self.__hurt__(1,force=True)
 		if offset[0] != 0 or offset[1] != 0:
 			self.pos[0] += offset[0]
 			self.pos[1] += offset[1]

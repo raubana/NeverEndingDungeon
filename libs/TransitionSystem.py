@@ -1,10 +1,14 @@
 from TileSystem import PitTile, Tile, Grid, TILE_SIZE, get_flattened_grid
 from common import invlerp, bezier
 
-import math
+import math, random
+
+def pick_random_transition():
+	L = [LeftToRightWipe,RightToLeftWipe,TopToBottomWipe,BottomToTopWipe]
+	return random.choice(L)
 
 class Transition(object):
-	def __init__(self, main, old_grid, new_grid, visible_grid, transition_length=60):
+	def __init__(self, main, old_grid, new_grid, visible_grid, transition_length=120):
 		self.main = main
 		self.old_grid = old_grid
 		self.new_grid = new_grid
@@ -125,9 +129,11 @@ class Transition(object):
 
 
 class HintedTransition(object):
-	def __init__(self, main, old_grid, new_grid, visible_grid, flat_delay = 60, flat_len = 30, hint_delay = 120,
-				 hint_len = 30, trans_delay = 300, trans_len = 120, flat_type = None,
+	def __init__(self, main, old_grid, new_grid, visible_grid, flat_delay = 15, flat_len = 60, hint_delay = 0,
+				 hint_len = 30, trans_delay = 90, trans_len = 300, flat_type = None,
 				 hint_type = None, trans_type = None):
+		#NOTE: NEVER MAKE THE LENGTH OF A TRANSITION LESS THAN 1!!
+
 		self.main = main
 		self.visible_grid = visible_grid
 
@@ -142,9 +148,9 @@ class HintedTransition(object):
 		self.hint_type = hint_type
 		self.trans_type = trans_type
 
-		if not self.flat_type: self.flat_type = LeftToRightWipe
-		if not self.hint_type: self.hint_type = LeftToRightWipe
-		if not self.trans_type: self.trans_type = LeftToRightWipe
+		if not self.flat_type: self.flat_type = pick_random_transition()
+		if not self.hint_type: self.hint_type = pick_random_transition()
+		if not self.trans_type: self.trans_type = pick_random_transition()
 
 		self.stage = 0
 		self.delay = 0
@@ -203,6 +209,91 @@ class LeftToRightWipe(Transition):
 	def get_transition_tile(self, tile_pos, trans_percent):
 		x_pos = self.size[0]*trans_percent
 		if x_pos >= tile_pos[0]:
+			return self.trans_new_grid.tiles[tile_pos[1]][tile_pos[0]]
+		else:
+			return self.trans_old_grid.tiles[tile_pos[1]][tile_pos[0]]
+
+
+class RightToLeftWipe(Transition):
+	def get_transition_tile(self, tile_pos, trans_percent):
+		x_pos = self.size[0]*(1-trans_percent)
+		if x_pos < tile_pos[0]:
+			return self.trans_new_grid.tiles[tile_pos[1]][tile_pos[0]]
+		else:
+			return self.trans_old_grid.tiles[tile_pos[1]][tile_pos[0]]
+
+
+class TopToBottomWipe(Transition):
+	#'Top' as it top of the screen.
+	def get_transition_tile(self, tile_pos, trans_percent):
+		y_pos = self.size[1]*(1-trans_percent)
+		if y_pos < tile_pos[1]:
+			return self.trans_new_grid.tiles[tile_pos[1]][tile_pos[0]]
+		else:
+			return self.trans_old_grid.tiles[tile_pos[1]][tile_pos[0]]
+
+
+class BottomToTopWipe(Transition):
+	#'Top' as it top of the screen.
+	def get_transition_tile(self, tile_pos, trans_percent):
+		y_pos = self.size[1]*trans_percent
+		if y_pos >= tile_pos[1]:
+			return self.trans_new_grid.tiles[tile_pos[1]][tile_pos[0]]
+		else:
+			return self.trans_old_grid.tiles[tile_pos[1]][tile_pos[0]]
+
+class SquareTLtoBRwipe(Transition):
+	def get_transition_tile(self, tile_pos, trans_percent):
+		total = max(self.size)*trans_percent
+		if total >= max(tile_pos):
+			return self.trans_new_grid.tiles[tile_pos[1]][tile_pos[0]]
+		else:
+			return self.trans_old_grid.tiles[tile_pos[1]][tile_pos[0]]
+
+class SquareTRtoBLwipe(Transition):
+	def get_transition_tile(self, tile_pos, trans_percent):
+		total = max(self.size)*trans_percent
+		if total >= max((self.size[0]-tile_pos[0]-1,tile_pos[1])):
+			return self.trans_new_grid.tiles[tile_pos[1]][tile_pos[0]]
+		else:
+			return self.trans_old_grid.tiles[tile_pos[1]][tile_pos[0]]
+
+class SquareBLtoTRwipe(Transition):
+	def get_transition_tile(self, tile_pos, trans_percent):
+		total = max(self.size)*trans_percent
+		if total >= max((tile_pos[0],self.size[1]-tile_pos[1]-1)):
+			return self.trans_new_grid.tiles[tile_pos[1]][tile_pos[0]]
+		else:
+			return self.trans_old_grid.tiles[tile_pos[1]][tile_pos[0]]
+
+class SquareBRtoTLwipe(Transition):
+	def get_transition_tile(self, tile_pos, trans_percent):
+		total = max(self.size)*trans_percent
+		if total >= max((self.size[0]-tile_pos[0]-1,self.size[1]-tile_pos[1]-1)):
+			return self.trans_new_grid.tiles[tile_pos[1]][tile_pos[0]]
+		else:
+			return self.trans_old_grid.tiles[tile_pos[1]][tile_pos[0]]
+
+class ReverseSquareTLtoBRwipe(Transition):
+	def get_transition_tile(self, tile_pos, trans_percent):
+		total = max(self.size)*trans_percent
+		if total >= min(tile_pos):
+			return self.trans_new_grid.tiles[tile_pos[1]][tile_pos[0]]
+		else:
+			return self.trans_old_grid.tiles[tile_pos[1]][tile_pos[0]]
+
+class SquareTLtoBRreverseWipe(Transition):
+	def get_transition_tile(self, tile_pos, trans_percent):
+		total = max(self.size)*(1-trans_percent)
+		if total < max(tile_pos):
+			return self.trans_new_grid.tiles[tile_pos[1]][tile_pos[0]]
+		else:
+			return self.trans_old_grid.tiles[tile_pos[1]][tile_pos[0]]
+
+class SquareOutToIn(Transition):
+	def get_transition_tile(self, tile_pos, trans_percent):
+		total = max(self.size)*trans_percent*0.5
+		if total >= tile_pos[0] or total >= tile_pos[1] or total >= self.size[0]-tile_pos[0]-1 or total >= self.size[1]-tile_pos[1]-1:
 			return self.trans_new_grid.tiles[tile_pos[1]][tile_pos[0]]
 		else:
 			return self.trans_old_grid.tiles[tile_pos[1]][tile_pos[0]]
