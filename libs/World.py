@@ -12,8 +12,6 @@ from Script import Script
 import random
 
 
-DEBUG_DISABLE_FOLLOW_PLAYER = False
-
 class World(object):
 	"""
 	This is the World! It contains all entities, sprites, particles, tiles, and many other things.
@@ -27,6 +25,7 @@ class World(object):
 		self.grid = Grid(main, (1,1))
 
 		self.transition = None
+		self.silent_transitions = False
 		self.fade = None
 
 		self.earthquake_amount = 0
@@ -42,6 +41,7 @@ class World(object):
 		self.particles = []
 
 		self.preferred_offset = (-((self.grid.gridsize[0]*TILE_SIZE*0.5) - (self.main.screen_size[0]/2)), -((self.grid.gridsize[1]*TILE_SIZE*0.5) - (self.main.screen_size[1]/2)))
+		self.disable_update_offset = False
 
 		#new_offset = ((0) - (self.main.screen_size[0]/2), (0) - (self.main.screen_size[1]/2))
 		self.visible_grid.set_offset(self.preferred_offset)
@@ -61,10 +61,21 @@ class World(object):
 
 		self.scripts = []
 
-		self.load_main_script()
+		self.load_startup_script()
 
-	def load_main_script(self):
-		self.scripts.insert(0, Script(self, "main_script"))
+	def load_startup_script(self):
+		#This is the script that's loaded when the program is started.
+		if False: # TODO: Check if there's a save-file.
+			self.scripts.insert(0, Script(self, "startscreen/continue_screen"))
+		else:
+			self.scripts.insert(0, Script(self, "startscreen/newgame_screen"))
+
+	def start_new_game(self):
+		self.scripts.insert(0, Script(self, "level1/main_script"))
+
+	def continue_saved_game(self):
+		#TODO: Finish this function so players can continue where they left off.
+		pass
 
 	def play_sound(self, soundname, offset = None, volume = 1.0):
 		#first we check if the sound exists
@@ -115,8 +126,9 @@ class World(object):
 						row[-1].color = lerp_colors(TILE_FLATTENED_COLOR, TILE_PIT_COLOR, TILE_HINT_COLOR_STRENGTH)
 					elif s == "e":
 						row[-1].color = lerp_colors(TILE_FLATTENED_COLOR, TILE_SPAWNERTILE_COLOR, TILE_HINT_COLOR_STRENGTH)
-				elif s == "T":
+				elif s in "123456789":
 					row.append(TriggerTile(self.main))
+					row[-1].id = s
 				elif s == "W":
 					row.append(WallTile(self.main))
 				elif s == "P":
@@ -257,7 +269,7 @@ class World(object):
 			# === MOVES THE 'CAMERA' ===
 			#first we center it.
 			new_offset = list(self.preferred_offset)
-			if not DEBUG_DISABLE_FOLLOW_PLAYER:
+			if not self.disable_update_offset:
 				#then we check if the player is almost going off of the screen.
 				pl = self.player
 				offset = [0,0]
@@ -325,5 +337,13 @@ class World(object):
 		pos = (int(self.player.pos[0]+offset[0]), int(self.player.pos[1]+offset[1]))
 		pygame.draw.circle(self.main.screen, (255,255,255), pos, 4)
 		"""
+
+		#we do letter-boxes for when the player doesn't have control.
+		size = 50
+		color = (192,192,192)
+		self.main.screen.fill(color, (0,0,self.main.screen_size[0],size), special_flags=BLEND_RGB_MULT)
+		self.main.screen.fill(color, (0,self.main.screen_size[1]-size,self.main.screen_size[0],size), special_flags=BLEND_RGB_MULT)
+
+		#We increment the current frame number.
 		if not self.paused:
 			self.current_frame += 1

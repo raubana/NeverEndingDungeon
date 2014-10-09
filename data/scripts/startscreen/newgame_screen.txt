@@ -1,0 +1,68 @@
+script startscreen/intro_sequence
+
+#We setup the grid and the player's position.
+set_grid startscreen/newgame
+set_player_pos [(8+0.5)*TILE_SIZE,(13+0.5)*TILE_SIZE]
+disable_update_offset
+set_preferred_offset [(self.world.main.screen_size[0]-(self.world.grid.gridsize[0]*TILE_SIZE))/2.0, ((self.world.main.screen_size[1]*0.5)-(self.world.grid.gridsize[1]*TILE_SIZE))/2.0]
+set_offset self.world.preferred_offset
+
+#We wait for the player to enter the cave.
+wait trigger_tile 1
+
+#We control the player's character to make him enter the cave more.
+enable_update_offset
+disable_player_controls
+set_player_direction 1
+set_player_walking True
+
+#We wait a moment for the player to enter the cave more.
+wait trigger_tile 2
+
+#The player stops and looks around...
+set_player_walking False
+wait delay 45
+set_player_direction 0
+wait delay 45
+set_player_direction 2
+wait delay 25
+
+#Suddenly, there's this rumbling...
+earthquake 1
+wait delay 30
+set_player_direction 3
+wait delay 120
+earthquake 0
+wait delay 90
+
+#TODO: The player seems puzzled.
+set_player_direction 0
+wait delay 30
+set_player_direction 2
+wait delay 30
+set_player_direction 0
+wait delay 10
+
+#Suddenly, the rumbling starts again, and the cave shuts closed!
+earthquake 2
+wait delay 10
+add_script common/player_panic
+wait delay 180
+transition startscreen/closed_grid_with_triggers BottomToTopWipe 120
+wait end_transition
+earthquake 0
+wait delay 30
+
+#(We wait for the player to be centered before stopping him.)
+wait trigger_tile_touch 1
+kill_script common/player_panic
+
+#The player notices the door has closed! They're trapped!
+set_player_walking False
+set_player_direction 3
+wait delay 60
+
+#Now the game can begin!
+enable_player_controls
+transition default_grid BottomToTopWipe 1
+start_newgame

@@ -220,20 +220,20 @@ class Player(Entity):
 						update_walk_sprite = True
 
 				#Attacking
-				for e in self.main.events:
-					if e.type == KEYDOWN and e.key == K_RETURN:
-						if not self.attacking and self.attack == 0:
-							#TODO: Do attack sound
-							self.attacking = True
-							self.attack = 1
-							self.sprite.set_frame("jab")
-							if self.direction == 0: self.sword_sprite.direction = DIRECTION_LEFT
-							elif self.direction == 1: self.sword_sprite.direction = DIRECTION_UP
-							elif self.direction == 2: self.sword_sprite.direction = DIRECTION_RIGHT
-							else: self.sword_sprite.direction = DIRECTION_DOWN
-							self.sword_sprite.set_frame("")
-							self.detect_sword_collisions()
-							self.main.world.play_sound("sword_swing", self.pos)
+				if not self.controls_disabled:
+					for e in self.main.events:
+						if e.type == KEYDOWN and e.key == K_RETURN:
+							if not self.attacking and self.attack == 0:
+								self.attacking = True
+								self.attack = 1
+								self.sprite.set_frame("jab")
+								if self.direction == 0: self.sword_sprite.direction = DIRECTION_LEFT
+								elif self.direction == 1: self.sword_sprite.direction = DIRECTION_UP
+								elif self.direction == 2: self.sword_sprite.direction = DIRECTION_RIGHT
+								else: self.sword_sprite.direction = DIRECTION_DOWN
+								self.sword_sprite.set_frame("")
+								self.detect_sword_collisions()
+								self.main.world.play_sound("sword_swing", self.pos)
 			else:
 				self.vec = tuple(self.hurt_direction)
 
