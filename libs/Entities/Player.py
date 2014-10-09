@@ -120,9 +120,11 @@ class Player(Entity):
 								self.__hurt__(1,offset)
 
 			#Pit Detection
-			pos = (float(self.pos[0])/TILE_SIZE, float(self.pos[1])/TILE_SIZE)
-			if not self.main.world.grid.is_legal_coords(pos):
-				self.__fall__()
+			pos = round_coords( (float(self.pos[0])/TILE_SIZE, float(self.pos[1])/TILE_SIZE) )
+			if self.main.world.grid.is_legal_coords(pos, True):
+				tile = self.main.world.grid.tiles[pos[1]][pos[0]]
+				if tile.is_a_pit:
+					self.__fall__()
 
 			#Hurt Update
 			if self.hurt != 0:

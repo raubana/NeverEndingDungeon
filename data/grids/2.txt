@@ -1,0 +1,10 @@
+11,9
+ppppppppppp
+p_p__p___pp
+pp__p__p_pp
+p_pp__p___p
+p__p__pp__p
+pp__p___p_p
+p_p_pp_pp_p
+pp_p__p__pp
+ppppppppppp

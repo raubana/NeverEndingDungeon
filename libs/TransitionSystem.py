@@ -1,4 +1,4 @@
-from TileSystem import PitTile, Tile, Grid, TILE_SIZE, get_flattened_grid
+from TileSystem import PitTile, Tile, Grid, TILE_SIZE, get_flattened_grid, WallTile
 from common import invlerp, bezier
 
 import math, random
@@ -46,41 +46,43 @@ class Transition(object):
 		self.trans_new_grid.tiles = []
 		self.trans_grid.tiles = []
 
+		self.changed_tiles = []
+
 		for y in xrange(self.size[1]):
 			#We create the trans_old_grid rows.
 			if y >= self.old_grid.gridsize[1]:
 				trans_old_row = []
 				for x in xrange(self.size[0]):
-					trans_old_row.append(PitTile(main))
+					trans_old_row.append(WallTile(main))
 			else:
 				#add new pits to the right of the old grid
 				trans_old_row = list(old_grid.tiles[y])
 				for x in xrange(self.size[0]-self.old_grid.gridsize[0]):
-					trans_old_row.append(PitTile(main))
+					trans_old_row.append(WallTile(main))
 			self.trans_old_grid.tiles.append(trans_old_row)
 
 			#We create the trans_new_grid rows.
 			if y >= self.new_grid.gridsize[1]:
 				trans_new_row = []
 				for x in xrange(self.size[0]):
-					trans_new_row.append(PitTile(main))
+					trans_new_row.append(WallTile(main))
 			else:
 				#add new pits to the right of the old grid
 				trans_new_row = list(new_grid.tiles[y])
 				for x in xrange(self.size[0]-self.new_grid.gridsize[0]):
-					trans_new_row.append(PitTile(main))
+					trans_new_row.append(WallTile(main))
 			self.trans_new_grid.tiles.append(trans_new_row)
 
 			#We create the trans_grid rows (which starts off identical to the trans_old_grid)
 			if y >= self.old_grid.gridsize[1]:
 				trans_row = []
 				for x in xrange(self.size[0]):
-					trans_row.append(PitTile(main))
+					trans_row.append(WallTile(main))
 			else:
 				#add new pits to the right of the old grid
 				trans_row = list(old_grid.tiles[y])
 				for x in xrange(self.size[0]-self.old_grid.gridsize[0]):
-					trans_row.append(PitTile(main))
+					trans_row.append(WallTile(main))
 			self.trans_grid.tiles.append(trans_row)
 
 		main.world.grid = self.trans_grid
@@ -92,6 +94,7 @@ class Transition(object):
 		pass
 
 	def update(self):
+		self.changed_tiles = []
 		rerender = False
 		if not self.done_transitioning:
 			self.transition += 1
@@ -111,6 +114,7 @@ class Transition(object):
 							if inside_old or inside_new:
 								tile = self.get_transition_tile((x,y), p)
 								if tile != self.trans_grid.tiles[y][x]:
+									self.changed_tiles.append(((x,y), self.trans_grid.tiles[y][x], tile))
 									self.trans_grid.tiles[y][x] = tile
 									tile.flag_for_rerender()
 									rerender = True
@@ -213,7 +217,6 @@ class LeftToRightWipe(Transition):
 		else:
 			return self.trans_old_grid.tiles[tile_pos[1]][tile_pos[0]]
 
-
 class RightToLeftWipe(Transition):
 	def get_transition_tile(self, tile_pos, trans_percent):
 		x_pos = self.size[0]*(1-trans_percent)
@@ -221,7 +224,6 @@ class RightToLeftWipe(Transition):
 			return self.trans_new_grid.tiles[tile_pos[1]][tile_pos[0]]
 		else:
 			return self.trans_old_grid.tiles[tile_pos[1]][tile_pos[0]]
-
 
 class TopToBottomWipe(Transition):
 	#'Top' as it top of the screen.
@@ -231,7 +233,6 @@ class TopToBottomWipe(Transition):
 			return self.trans_new_grid.tiles[tile_pos[1]][tile_pos[0]]
 		else:
 			return self.trans_old_grid.tiles[tile_pos[1]][tile_pos[0]]
-
 
 class BottomToTopWipe(Transition):
 	#'Top' as it top of the screen.

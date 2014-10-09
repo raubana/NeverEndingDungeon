@@ -83,6 +83,8 @@ class Entity(object):
 
 	def do_tile_collision_detection(self):
 		offset = [0,0]
+		hurt_me = False
+		#first we check the tiles that are actually in the grid.
 		for x in xrange(int(self.rect.left/TILE_SIZE),int(self.rect.right/TILE_SIZE)+1):
 			for y in xrange(int(self.rect.top/TILE_SIZE),int(self.rect.bottom/TILE_SIZE)+1):
 				if self.main.world.grid.is_legal_coords((x,y)) and self.main.world.grid.tiles[y][x].solid:
@@ -104,7 +106,29 @@ class Entity(object):
 							if abs(offset[1]) < bottom: offset[1] = -bottom
 
 						if m >= TILE_SIZE/2:
-							self.__hurt__(1,force=True)
+							hurt_me = True
+		#next we check if the rect is outside of the grid
+		rect = pygame.Rect([0,0,self.main.world.grid.gridsize[0]*TILE_SIZE,self.main.world.grid.gridsize[1]*TILE_SIZE])
+		left = rect.left - self.rect.left
+		top = rect.top - self.rect.top
+		right = self.rect.right - rect.right
+		bottom = self.rect.bottom - rect.bottom
+		m = min(left,top,right,bottom)
+
+		if left > 0:
+			if abs(offset[0]) < left: offset[0] = left
+		if top >0:
+			if abs(offset[1]) < top: offset[1] = top
+		if right > 0:
+			if abs(offset[0]) < right: offset[0] = -right
+		if bottom > 0:
+			if abs(offset[1]) < bottom: offset[1] = -bottom
+
+		if m >= TILE_SIZE/2:
+			hurt_me = True
+
+		if hurt_me:
+			self.__hurt__(1,force=True)
 		if offset[0] != 0 or offset[1] != 0:
 			self.pos[0] += offset[0]
 			self.pos[1] += offset[1]

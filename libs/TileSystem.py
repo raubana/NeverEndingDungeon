@@ -13,8 +13,10 @@ TILE_SIZE = 48  # The 2D size of a side of a single tile in pixels.
 
 TILE_FLOOR_COLOR = (96,96,96)
 TILE_FLATTENED_COLOR = (127,127,127)
-TILE_WALLTILE_COLOR = (192,32,32)
+TILE_WALLTILE_COLOR = (96,127,160)
 TILE_PIT_COLOR = (0,0,0)
+
+TILE_HINT_COLOR_STRENGTH = 0.5
 
 OUTLINE_NORMAL = 1
 OUTLINE_OUTSET = 2
@@ -55,7 +57,7 @@ def get_flattened_grid(grid, size = None):
 			else:
 				color = TILE_PIT_COLOR
 				is_pit = True
-			new_tile.color = lerp_colors(new_tile.color,color,0.5)
+			new_tile.color = lerp_colors(new_tile.color, color, TILE_HINT_COLOR_STRENGTH)
 			if is_pit:
 				new_tile.outline_type = OUTLINE_NORMAL
 				new_tile.outline_strength = 0.025
@@ -265,8 +267,8 @@ class WallTile(Tile):
 	def init(self):
 		self.solid = True
 		self.color = copy_color(TILE_WALLTILE_COLOR)
-		self.outline_strength = 0.8
-		self.outline_size = 2
+		self.outline_strength = 0.35
+		self.outline_size = 3
 		self.outline_type = OUTLINE_OUTSET
 
 class PitTile(Tile):
@@ -305,6 +307,15 @@ class VisibleGrid(object):
 
 		self.filter = 0
 		self.filter_color = (255,255,255)
+
+		wall = WallTile(self.main)
+		wall.rerender()
+
+		self.wall_texture = wall.rendered_surface
+
+		for y in xrange(self.gridsize[1]):
+			for x in xrange(self.gridsize[0]):
+				self.rendered_surface.blit(self.wall_texture, (x*TILE_SIZE,y*TILE_SIZE))
 
 	def apply_filter(self, filter_color, filter_type):
 		self.filter = filter_type
@@ -372,7 +383,8 @@ class VisibleGrid(object):
 							# We tell the tile to render to the surface.
 							tile.render(self.rendered_surface, (x*TILE_SIZE,y*TILE_SIZE))
 						else:
-							self.rendered_surface.fill((0,0,0),(x*TILE_SIZE,y*TILE_SIZE,TILE_SIZE,TILE_SIZE))
+							self.rendered_surface.blit(self.wall_texture,(x*TILE_SIZE,y*TILE_SIZE))
+							#self.rendered_surface.fill((0,0,0),(x*TILE_SIZE,y*TILE_SIZE,TILE_SIZE,TILE_SIZE))
 
 					if self.filter != 0:
 						self.rendered_surface.fill(self.filter_color, (x*TILE_SIZE,y*TILE_SIZE, TILE_SIZE, TILE_SIZE), special_flags=self.filter)

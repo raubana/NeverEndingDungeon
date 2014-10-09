@@ -3,8 +3,9 @@ from pygame.locals import*
 from libs.MusicMan import MusicMan
 
 pygame.mixer.pre_init(frequency = 44010, buffer = 2**9)
-
 pygame.init()
+
+pygame.mixer.set_num_channels(100)
 
 from libs.World import World
 
