@@ -50,6 +50,7 @@ class World(object):
 		self.sounds["sword_swing"] = pygame.mixer.Sound("snds/sfx/sword_swing.wav")
 		self.sounds["tile_change"] = pygame.mixer.Sound("snds/sfx/tile_change.wav")
 		self.sounds["tile_change_color"] = pygame.mixer.Sound("snds/sfx/tile_change_color.wav")
+		self.sounds["death_music"] = pygame.mixer.Sound("snds/songs/death_music.ogg")
 
 		self.load_main_script()
 
@@ -71,15 +72,22 @@ class World(object):
 				new_s.append(line)
 		return new_s
 
-	def play_sound(self, soundname, offset, volume = 1.0):
+	def play_sound(self, soundname, offset = None, volume = 1.0):
 		#first we check if the sound exists
 		if soundname in self.sounds:
 			sound = self.sounds[soundname]
-			x_pos = self.visible_grid.offset[0]+offset[0]
-			x_pos = min(max(x_pos,0), self.main.screen_size[0])
-			p = x_pos/float(self.main.screen_size[0])
-			L_vol = max(min((1-p)*2,1.0),0.0) * volume
-			R_vol = max(min(p*2,1.0),0.0) * volume
+			if offset:
+				x_pos = self.visible_grid.offset[0]+offset[0]
+				x_pos = min(max(x_pos,0), self.main.screen_size[0])
+				p = x_pos/float(self.main.screen_size[0])
+				L_vol = max(min((1-p)*2,1.0),0.0)
+				R_vol = max(min(p*2,1.0),0.0)
+			else:
+				L_vol = 1.0
+				R_vol = 1.0
+
+			L_vol *= volume
+			R_vol *= volume
 
 			channel = sound.play()
 			if channel:

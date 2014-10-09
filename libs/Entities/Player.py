@@ -243,6 +243,8 @@ class Player(Entity):
 				self.dying += 1
 				if self.dying < self.dying_predelay:
 					pass
+				elif self.dying == self.dying_predelay:
+					self.main.world.play_sound("death_music", volume=self.main.music.volume)
 				elif self.dying - self.dying_predelay >= self.dying_length:
 					self.dying = 0
 					self.is_dying = False
@@ -259,6 +261,7 @@ class Player(Entity):
 					pass
 				elif self.fall == self.dying_predelay:
 					self.main.world.play_sound("falling", self.pos)
+					self.main.world.play_sound("death_music", volume=self.main.music.volume)
 				elif self.fall - self.dying_predelay < self.fall_length:
 					self.direction = ((self.fall-self.dying_predelay)/4)%4
 					self.set_sprite_direction()
