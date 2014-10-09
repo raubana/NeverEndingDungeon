@@ -8,3 +8,5 @@ wait current_music 2
 transition 11 HintedTransition
 wait end_transition
 wait enemies_dead
+
+wait delay 120

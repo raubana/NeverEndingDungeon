@@ -14,4 +14,5 @@ wait delay 180
 #...and then we drop the player into their first deadly situation.
 transition 3 HintedTransition flat_type = RightToLeftWipe, hint_type = LeftToRightWipe, trans_type = LeftToRightWipe, flat_len = 1, trans_len = 180
 wait end_transition
+
 wait delay 120
