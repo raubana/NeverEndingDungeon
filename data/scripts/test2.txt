@@ -1,3 +1,9 @@
+#Start the music...
+load_song mmsm
+play_music
+cue_music 1
+wait current_music 2
+
 #Alright, let's speed things up a bit...
 transition 4 HintedTransition trans_len = 120, flat_type = SquareTRtoBLwipe, hint_type = SquareBLtoTRwipe, trans_type = SquareBLtoTRwipe
 wait end_transition
@@ -26,9 +32,3 @@ stop_music
 wait delay 90
 transition 10 BottomToTopWipe 1
 wait end_transition
-load_song mmnm
-wait delay 90
-play_music
-
-#Aw... you're no fun.
-wait delay 60

@@ -1,12 +1,9 @@
 #First we wait a moment...
-load_song mmsm
 wait delay 120
 
-#Then we start playing the music and open the stage up.
+#Then we open the stage up.
 transition 1 SquareTLtoBRwipe 240
 wait end_transition
-wait delay 180
-play_music
 wait delay 180
 
 #We give a little tutorial on what to expect...
@@ -15,8 +12,6 @@ wait end_transition
 wait delay 180
 
 #...and then we drop the player into their first deadly situation.
-cue_music 1
-wait current_music 2
 transition 3 HintedTransition flat_type = RightToLeftWipe, hint_type = LeftToRightWipe, trans_type = LeftToRightWipe, flat_len = 1, trans_len = 180
 wait end_transition
 wait delay 120

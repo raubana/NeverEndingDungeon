@@ -1,0 +1,6 @@
+15,5
+---p--pp--ppp--
+--p-p-p-p-p----
+--ppp-pp--pp---
+--p-p-p-p-p----
+--p-p-p-p-ppp--

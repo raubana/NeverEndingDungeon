@@ -38,7 +38,7 @@ class Player(Entity):
 
 		self.dying = 0
 		self.dying_predelay = 60
-		self.dying_length = 120
+		self.dying_length = 140
 
 		self.prev_pos = tuple(self.pos)
 		self.health = 8

@@ -1,5 +1,7 @@
-script test1
+#script test1
 
-script test2
+#script test2
 
 script test3
+
+script killscreen

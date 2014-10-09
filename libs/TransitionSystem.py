@@ -98,7 +98,7 @@ class Transition(object):
 		rerender = False
 		if not self.done_transitioning:
 			self.transition += 1
-			if self.transition > self.transition_length:
+			if self.transition > self.transition_length+1:
 				self.done_transitioning = True
 				self.main.world.grid = self.new_grid
 				rerender = True

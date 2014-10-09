@@ -12,6 +12,7 @@ import random, math
 TILE_SIZE = 48  # The 2D size of a side of a single tile in pixels.
 
 TILE_FLOOR_COLOR = (96,96,96)
+TILE_SPAWNERTILE_COLOR = (192,192,127)
 TILE_FLATTENED_COLOR = (127,127,127)
 TILE_WALLTILE_COLOR = (64,127,192)
 TILE_PIT_COLOR = (0,0,0)
@@ -262,6 +263,10 @@ class Tile(object):
 	def render(self, surface, pos):
 		self.rerender()
 		surface.blit(self.rendered_surface, pos)
+
+class SpawnerTile(Tile):
+	def init(self):
+		self.color = TILE_SPAWNERTILE_COLOR
 
 class WallTile(Tile):
 	def init(self):

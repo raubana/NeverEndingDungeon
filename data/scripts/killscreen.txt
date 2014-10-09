@@ -1,0 +1,26 @@
+cue_music 3
+
+#Alright, that's it... No more mister nice-guy.
+transition killscreen/0 HintedTransition
+wait end_transition
+
+#This is a Kill-Screen.
+wait delay 120
+
+#YOU
+transition killscreen/1 LeftToRightWipe 1
+wait end_transition
+wait delay 45
+
+#ARE
+transition killscreen/2 LeftToRightWipe 1
+wait end_transition
+wait delay 45
+
+#DEAD
+transition killscreen/3 LeftToRightWipe 1
+wait end_transition
+wait delay 45
+
+transition killscreen/4 LeftToRightWipe 1
+

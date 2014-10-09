@@ -123,6 +123,8 @@ class World(object):
 					row.append(WallTile(self.main))
 				elif s == "P":
 					row.append(PitTile(self.main))
+				elif s == "1":
+					row.append(SpawnerTile(self.main))
 			grid.tiles.append(row)
 
 		return grid
@@ -187,6 +189,13 @@ class World(object):
 					elif wait == "end_transition":
 						if self.transition != None:
 							stop = True
+					elif wait == "enemies_dead":
+						count = 0
+						for npc in self.npcs:
+							if npc.is_bad:
+								count += 1
+						if count != 0:
+							stop = True
 				if not stop:
 					self.main_script_index += 1
 			else:
@@ -201,18 +210,16 @@ class World(object):
 		Dead entities are pruned in this function.
 		"""
 
-		#Updates the script
-		self.parse_script()
-
 		if not self.player.dead:
+			#Updates the script
+			self.parse_script()
+
 			if self.transition != None:
 				self.transition.update()
 				#Checks out the changed tiles.
 				changes = []
 				for change in self.transition.changed_tiles:
-					type1 = type(change[1])
-					type2 = type(change[2])
-					if type1 != type2:
+					if change[1].solid != change[2].solid or change[1].is_a_pit != change[2].is_a_pit:
 						#we play a rumble sound for this tile.
 						match = False
 						for ch in changes:
@@ -230,6 +237,9 @@ class World(object):
 								break
 						if not match:
 							changes.append((change[0][0], "tile_change_color"))
+					if type(change[2]) == SpawnerTile:
+						pos = ((change[0][0]+0.5)*TILE_SIZE, (change[0][1]+0.5)*TILE_SIZE)
+						self.npcs.append(Baddie1(self.main, pos))
 				if len(changes) > 0:
 					volume = 1.0 / len(changes)
 					for ch in changes:

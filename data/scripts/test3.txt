@@ -1,9 +1,10 @@
-#Alright, that's it... No more mister nice-guy.
-transition 0 VerticalInToOutWipe 120
+load_song mmnm
+wait delay 90
+play_music
+cue_music 1
+wait current_music 2
+
+#Alright, it's time to face some baddies!
+transition 11 HintedTransition
 wait end_transition
-
-#This is a Kill-Screen.
-wait delay 120
-
-#Goodbye ;)
-transition killscreen HintedTransition
+wait enemies_dead
