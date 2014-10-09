@@ -1,3 +1,4 @@
+import string
 import pygame
 from pygame.locals import*
 
@@ -11,6 +12,7 @@ import random
 
 
 DEBUG_DISABLE_FOLLOW_PLAYER = False
+DEBUG_PRINT_PARSE_SCRIPT = 1 #0 is off, 1 is just the comments, and 2 is everything.
 
 class World(object):
 	"""
@@ -123,7 +125,8 @@ class World(object):
 			if self.main_script_index < len(self.main_script):
 				line = self.main_script[self.main_script_index]
 				if self.prev_main_script_index != self.main_script_index:
-					print line
+					if DEBUG_PRINT_PARSE_SCRIPT == 2 or (DEBUG_PRINT_PARSE_SCRIPT == 1 and line.startswith("#")):
+						print line
 
 				if line.startswith("#") or line == "":
 					pass
@@ -132,6 +135,8 @@ class World(object):
 					self.main.music.load_music(song)
 				elif line == "play_music":
 					self.main.music.begin()
+				elif line == "stop_music":
+					self.main.music.stop()
 				elif line.startswith("cue_music "):
 					cued = line[len("cue_music "):]
 					self.main.music.cue(int(cued))
@@ -142,10 +147,17 @@ class World(object):
 					transition = line[len("transition "):]
 					parts = transition.split(" ")
 					grid_filename = parts[0]
-					trans_type = eval(parts[1])
-					length = int(parts[2])
 					new_grid = self.load_grid(grid_filename)
-					self.transition = trans_type(self.main, self.grid, new_grid, self.visible_grid, length)
+					if parts[1] == "HintedTransition":
+						args = parts[2:]
+						if len(args) > 0:
+							self.transition = eval("HintedTransition(self.main, self.grid, new_grid, self.visible_grid, "+string.join(args)+")")
+						else:
+							self.transition = HintedTransition(self.main, self.grid, new_grid, self.visible_grid)
+					else:
+						trans_type = eval(parts[1])
+						length = int(parts[2])
+						self.transition = trans_type(self.main, self.grid, new_grid, self.visible_grid, trans_len = length)
 				elif line.startswith("wait "):
 					wait = line[len("wait "):]
 					if wait.startswith("current_music "):

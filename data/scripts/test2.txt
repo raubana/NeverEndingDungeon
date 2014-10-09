@@ -1,0 +1,34 @@
+#Alright, let's speed things up a bit...
+transition 4 HintedTransition trans_len = 120, flat_type = SquareTRtoBLwipe, hint_type = SquareBLtoTRwipe, trans_type = SquareBLtoTRwipe
+wait end_transition
+transition 5 HintedTransition trans_len = 90, flat_type = SquareTRtoBLwipe, hint_type = TopToBottomWipe, trans_type = TopToBottomWipe
+wait end_transition
+
+hard_cue_music 3
+transition 6 BottomToTopWipe 60
+wait end_transition
+
+#Uh oh, watch out for that drop!
+wait delay 90
+transition 7 BottomToTopWipe 1
+wait end_transition
+cue_music 2
+wait current_music 2
+
+transition 8 TopToBottomWipe 60
+wait end_transition
+wait delay 30
+transition 9 BottomToTopWipe 1
+wait end_transition
+
+# PSYCH!!
+stop_music
+wait delay 90
+transition 10 BottomToTopWipe 1
+wait end_transition
+load_song mmnm
+wait delay 90
+play_music
+
+#Aw... you're no fun.
+wait delay 60

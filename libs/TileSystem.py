@@ -13,7 +13,7 @@ TILE_SIZE = 48  # The 2D size of a side of a single tile in pixels.
 
 TILE_FLOOR_COLOR = (96,96,96)
 TILE_FLATTENED_COLOR = (127,127,127)
-TILE_WALLTILE_COLOR = (96,127,160)
+TILE_WALLTILE_COLOR = (64,127,192)
 TILE_PIT_COLOR = (0,0,0)
 
 TILE_HINT_COLOR_STRENGTH = 0.5
@@ -55,8 +55,8 @@ def get_flattened_grid(grid, size = None):
 				elif grid.tiles[y][x].solid:
 					is_solid = True
 			else:
-				color = TILE_PIT_COLOR
-				is_pit = True
+				color = TILE_WALLTILE_COLOR
+				is_solid = True
 			new_tile.color = lerp_colors(new_tile.color, color, TILE_HINT_COLOR_STRENGTH)
 			if is_pit:
 				new_tile.outline_type = OUTLINE_NORMAL

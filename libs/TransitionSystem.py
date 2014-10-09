@@ -8,7 +8,7 @@ def pick_random_transition():
 	return random.choice(L)
 
 class Transition(object):
-	def __init__(self, main, old_grid, new_grid, visible_grid, transition_length=120):
+	def __init__(self, main, old_grid, new_grid, visible_grid, trans_len=120):
 		self.main = main
 		self.old_grid = old_grid
 		self.new_grid = new_grid
@@ -16,7 +16,7 @@ class Transition(object):
 		self.visible_grid = visible_grid
 		self.done_transitioning = False
 		self.transition = 0
-		self.transition_length = transition_length
+		self.transition_length = trans_len
 
 		self.update_frequency = 0
 		self.last_update = int(self.update_frequency)
@@ -133,15 +133,14 @@ class Transition(object):
 
 
 class HintedTransition(object):
-	def __init__(self, main, old_grid, new_grid, visible_grid, flat_delay = 0, flat_len = 30, hint_delay = 0,
-				 hint_len = 30, trans_delay = 240, trans_len = 90, flat_type = None,
+	def __init__(self, main, old_grid, new_grid, visible_grid, flat_len = 60, hint_delay = 60,
+				 hint_len = 60, trans_delay = 120, trans_len = 60, flat_type = None,
 				 hint_type = None, trans_type = None):
 		#NOTE: NEVER MAKE THE LENGTH OF A TRANSITION LESS THAN 1!!
 
 		self.main = main
 		self.visible_grid = visible_grid
 
-		self.flat_delay = flat_delay
 		self.flat_length = flat_len
 		self.hint_delay = hint_delay
 		self.hint_length = hint_len
@@ -156,7 +155,7 @@ class HintedTransition(object):
 		if not self.hint_type: self.hint_type = pick_random_transition()
 		if not self.trans_type: self.trans_type = pick_random_transition()
 
-		self.stage = 0
+		self.stage = 1
 		self.delay = 0
 
 		new_size = (max(old_grid.gridsize[0],new_grid.gridsize[0]),
@@ -167,18 +166,25 @@ class HintedTransition(object):
 		self.hint_grid = get_flattened_grid(new_grid, new_size)
 		self.new_grid = new_grid
 
-		self.current_transition = None
+		self.current_transition = self.flat_type(self.main,
+												 self.old_grid,
+												 self.flat_grid,
+												 self.visible_grid,
+												 self.flat_length)
+
+		self.changed_tiles = []
 
 		self.done_transitioning = False
 
 	def update(self):
+		self.changed_tiles = []
 		if self.stage != 6:
 			delay_amount = None
-			if self.stage == 0: delay_amount = self.flat_delay
-			elif self.stage == 2: delay_amount = self.hint_delay
+			if self.stage == 2: delay_amount = self.hint_delay
 			elif self.stage == 4: delay_amount = self.trans_delay
 			else:
 				self.current_transition.update()
+				self.changed_tiles = self.current_transition.changed_tiles
 				if self.current_transition.done_transitioning:
 					self.current_transition = None
 					self.stage += 1
@@ -187,13 +193,7 @@ class HintedTransition(object):
 				if self.delay >= delay_amount:
 					self.delay = 0
 					self.stage += 1
-					if self.stage == 1:
-						self.current_transition = self.flat_type(self.main,
-																 self.old_grid,
-																 self.flat_grid,
-																 self.visible_grid,
-																 self.flat_length)
-					elif self.stage == 3:
+					if self.stage == 3:
 						self.current_transition = self.hint_type(self.main,
 																 self.flat_grid,
 																 self.hint_grid,
@@ -225,7 +225,16 @@ class RightToLeftWipe(Transition):
 		else:
 			return self.trans_old_grid.tiles[tile_pos[1]][tile_pos[0]]
 
-class TopToBottomWipe(Transition):
+class VerticalInToOutWipe(Transition):
+	def get_transition_tile(self, tile_pos, trans_percent):
+		x_pos1 = self.size[0]*trans_percent*0.5
+		x_pos2 = self.size[0]*(1-(trans_percent*0.5))
+		if x_pos1 >= tile_pos[0] or x_pos2 < tile_pos[0]:
+			return self.trans_new_grid.tiles[tile_pos[1]][tile_pos[0]]
+		else:
+			return self.trans_old_grid.tiles[tile_pos[1]][tile_pos[0]]
+
+class BottomToTopWipe(Transition):
 	#'Top' as it top of the screen.
 	def get_transition_tile(self, tile_pos, trans_percent):
 		y_pos = self.size[1]*(1-trans_percent)
@@ -234,7 +243,7 @@ class TopToBottomWipe(Transition):
 		else:
 			return self.trans_old_grid.tiles[tile_pos[1]][tile_pos[0]]
 
-class BottomToTopWipe(Transition):
+class TopToBottomWipe(Transition):
 	#'Top' as it top of the screen.
 	def get_transition_tile(self, tile_pos, trans_percent):
 		y_pos = self.size[1]*trans_percent

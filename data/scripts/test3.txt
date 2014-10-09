@@ -1,0 +1,9 @@
+#Alright, that's it... No more mister nice-guy.
+transition 0 VerticalInToOutWipe 120
+wait end_transition
+
+#This is a Kill-Screen.
+wait delay 120
+
+#Goodbye ;)
+transition killscreen HintedTransition
