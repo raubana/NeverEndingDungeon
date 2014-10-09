@@ -6,6 +6,7 @@ pygame.mixer.pre_init(frequency = 44010, buffer = 2**9)
 pygame.init()
 
 pygame.mixer.set_num_channels(100)
+pygame.mixer.set_reserved(1)
 
 from libs.World import World
 
@@ -56,7 +57,7 @@ class Main(object):
 			self.render()
 
 			for event in self.events:
-				if event.type == QUIT or event.type == KEYDOWN and event.key == K_ESCAPE:
+				if event.type == QUIT:
 					self.running = False
 
 			self.clock.tick(self.framerate)

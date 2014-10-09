@@ -27,6 +27,11 @@ class MusicMan(object):
 
 		self.volume = 0.4
 
+	def set_volume(self, volume = 0.4):
+		self.volume = volume
+		if self.current:
+			pygame.mixer.music.set_volume(self.volume)
+
 	def load_music(self, song):
 		f = open("snds/songs/"+song+"/bpm.txt")
 		self.next_bpm = float(f.readline())

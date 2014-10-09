@@ -1,18 +1,19 @@
-#First we wait a moment...
+disable_player_controls
+set_player_direction 3
+set_player_walking True
+transition 0 SquareTLtoBRwipe 60
 wait delay 120
+set_player_direction 2
+wait delay 90
+earthquake 1
+wait delay 30
+set_player_walking False
+wait delay 60
+set_player_direction 1
+wait delay 60
+set_player_direction 0
+wait delay 60
+earthquake 0
+wait delay 60
+enable_player_controls
 
-#Then we open the stage up.
-transition 1 SquareTLtoBRwipe 240
-wait end_transition
-wait delay 180
-
-#We give a little tutorial on what to expect...
-transition 2 TopToBottomWipe 120
-wait end_transition
-wait delay 180
-
-#...and then we drop the player into their first deadly situation.
-transition 3 HintedTransition flat_type = RightToLeftWipe, hint_type = LeftToRightWipe, trans_type = LeftToRightWipe, flat_len = 1, trans_len = 180
-wait end_transition
-
-wait delay 120

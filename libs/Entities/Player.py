@@ -44,6 +44,8 @@ class Player(Entity):
 		self.health = 8
 		self.vec = [0,0]
 
+		self.controls_disabled = False
+
 	def hurt_me(self):
 		if DEBUG_PLAYER_INVINCIBLE:
 			self.dead = False
@@ -152,46 +154,47 @@ class Player(Entity):
 							self.attack = 0
 
 				#Directional Control
-				for e in self.main.events:
-					if e.type in (KEYDOWN,KEYUP) and e.key in (K_a,K_w,K_d,K_s):
-						if e.type == KEYDOWN:
-							if e.key == K_a:
-								self.direction = 0
-								self.main.keys[K_a] = True
-							elif e.key == K_w:
-								self.direction = 1
-								self.main.keys[K_w] = True
-							elif e.key == K_d:
-								self.direction = 2
-								self.main.keys[K_d] = True
-							elif e.key == K_s:
-								self.direction = 3
-								self.main.keys[K_s] = True
-							self.walking = True
-				if self.walking:
-					done_walking = True
-					if not self.main.keys[K_a] and self.direction == 0:
-						pass
-					elif not self.main.keys[K_w] and self.direction == 1:
-						pass
-					elif not self.main.keys[K_d] and self.direction == 2:
-						pass
-					elif not self.main.keys[K_s] and self.direction == 3:
-						pass
-					else:
-						done_walking = False
-					if done_walking:
-						#we also check if there's a key still being pressed, but only one
-						count = int(self.main.keys[K_a]) + int(self.main.keys[K_w]) + int(self.main.keys[K_d]) + int(self.main.keys[K_s])
-						if count == 1:
-							if self.main.keys[K_a]: self.direction = 0
-							elif self.main.keys[K_w]: self.direction = 1
-							elif self.main.keys[K_d]: self.direction = 2
-							elif self.main.keys[K_s]: self.direction = 3
+				if not self.controls_disabled:
+					for e in self.main.events:
+						if e.type in (KEYDOWN,KEYUP) and e.key in (K_a,K_w,K_d,K_s):
+							if e.type == KEYDOWN:
+								if e.key == K_a:
+									self.direction = 0
+									self.main.keys[K_a] = True
+								elif e.key == K_w:
+									self.direction = 1
+									self.main.keys[K_w] = True
+								elif e.key == K_d:
+									self.direction = 2
+									self.main.keys[K_d] = True
+								elif e.key == K_s:
+									self.direction = 3
+									self.main.keys[K_s] = True
+								self.walking = True
+					if self.walking:
+						done_walking = True
+						if not self.main.keys[K_a] and self.direction == 0:
+							pass
+						elif not self.main.keys[K_w] and self.direction == 1:
+							pass
+						elif not self.main.keys[K_d] and self.direction == 2:
+							pass
+						elif not self.main.keys[K_s] and self.direction == 3:
+							pass
+						else:
+							done_walking = False
+						if done_walking:
+							#we also check if there's a key still being pressed, but only one
+							count = int(self.main.keys[K_a]) + int(self.main.keys[K_w]) + int(self.main.keys[K_d]) + int(self.main.keys[K_s])
+							if count == 1:
+								if self.main.keys[K_a]: self.direction = 0
+								elif self.main.keys[K_w]: self.direction = 1
+								elif self.main.keys[K_d]: self.direction = 2
+								elif self.main.keys[K_s]: self.direction = 3
+								else:
+									self.walking = False
 							else:
 								self.walking = False
-						else:
-							self.walking = False
 
 				#Motion
 				if not self.attacking:
@@ -244,7 +247,7 @@ class Player(Entity):
 				if self.dying < self.dying_predelay:
 					pass
 				elif self.dying == self.dying_predelay:
-					self.main.world.play_sound("death_music", volume=self.main.music.volume)
+					self.main.world.play_sound("death_music", volume=self.main.music.volume*0.75)
 				elif self.dying - self.dying_predelay >= self.dying_length:
 					self.dying = 0
 					self.is_dying = False
@@ -261,7 +264,7 @@ class Player(Entity):
 					pass
 				elif self.fall == self.dying_predelay:
 					self.main.world.play_sound("falling", self.pos)
-					self.main.world.play_sound("death_music", volume=self.main.music.volume)
+					self.main.world.play_sound("death_music", volume=self.main.music.volume*0.5)
 				elif self.fall - self.dying_predelay < self.fall_length:
 					self.direction = ((self.fall-self.dying_predelay)/4)%4
 					self.set_sprite_direction()

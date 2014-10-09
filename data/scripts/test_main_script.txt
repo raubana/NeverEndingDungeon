@@ -1,4 +1,4 @@
-#script test1
+script test1
 
 script test3
 

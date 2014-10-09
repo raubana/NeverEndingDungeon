@@ -7,12 +7,12 @@ from Entities.Player import Player
 from Entities.Baddie1 import Baddie1
 from common import lerp_pos, lerp_colors, lerp
 from TransitionSystem import *
+from Script import Script
 
 import random
 
 
 DEBUG_DISABLE_FOLLOW_PLAYER = False
-DEBUG_PRINT_PARSE_SCRIPT = 1 #0 is off, 1 is just the comments, and 2 is everything.
 
 class World(object):
 	"""
@@ -22,10 +22,16 @@ class World(object):
 		self.main = main
 
 		self.current_frame = long(0)
+		self.paused = False
 
 		self.grid = Grid(main, (1,1))
 
 		self.transition = None
+		self.fade = None
+
+		self.earthquake_amount = 0
+		self.earthquake_sound = pygame.mixer.Sound("snds/sfx/earthquake.wav")
+		self.earthquake_sound_channel = pygame.mixer.Channel(0)
 
 		self.visible_grid = VisibleGrid(main)
 
@@ -51,26 +57,14 @@ class World(object):
 		self.sounds["tile_change"] = pygame.mixer.Sound("snds/sfx/tile_change.wav")
 		self.sounds["tile_change_color"] = pygame.mixer.Sound("snds/sfx/tile_change_color.wav")
 		self.sounds["death_music"] = pygame.mixer.Sound("snds/songs/death_music.ogg")
+		self.sounds["pause_sound"] = pygame.mixer.Sound("snds/misc/pause_sound.wav")
+
+		self.scripts = []
 
 		self.load_main_script()
 
 	def load_main_script(self):
-		self.main_script = self.load_script("main_script")
-		self.main_script_index = 0
-		self.prev_main_script_index = -1
-
-	def load_script(self, filename):
-		f = open("data/scripts/"+filename+".txt")
-		s = f.read().split("\n")
-		f.close()
-		new_s = []
-		while len(s) > 0:
-			line = s.pop(0).strip()
-			if line.startswith("script "): # This allows for compounding of separate scripts.
-				s = self.load_script(line[len("script "):]) + s
-			else:
-				new_s.append(line)
-		return new_s
+		self.scripts.insert(0, Script(self, "main_script"))
 
 	def play_sound(self, soundname, offset = None, volume = 1.0):
 		#first we check if the sound exists
@@ -111,7 +105,7 @@ class World(object):
 			row = []
 			line = list(data.pop(0))
 			for s in line:
-				if s in "_-wp":
+				if s in "_-wpe":
 					row.append(Tile(self.main))
 					if s == "-":
 						row[-1].color = lerp_colors(TILE_FLATTENED_COLOR, TILE_FLOOR_COLOR, TILE_HINT_COLOR_STRENGTH)
@@ -119,89 +113,19 @@ class World(object):
 						row[-1].color = lerp_colors(TILE_FLATTENED_COLOR, TILE_WALLTILE_COLOR, TILE_HINT_COLOR_STRENGTH)
 					elif s == "p":
 						row[-1].color = lerp_colors(TILE_FLATTENED_COLOR, TILE_PIT_COLOR, TILE_HINT_COLOR_STRENGTH)
+					elif s == "e":
+						row[-1].color = lerp_colors(TILE_FLATTENED_COLOR, TILE_SPAWNERTILE_COLOR, TILE_HINT_COLOR_STRENGTH)
+				elif s == "T":
+					row.append(TriggerTile(self.main))
 				elif s == "W":
 					row.append(WallTile(self.main))
 				elif s == "P":
 					row.append(PitTile(self.main))
-				elif s == "1":
+				elif s == "E":
 					row.append(SpawnerTile(self.main))
 			grid.tiles.append(row)
 
 		return grid
-
-	def parse_script(self):
-		stop = False
-		while not stop:
-			if self.main_script_index < len(self.main_script):
-				line = self.main_script[self.main_script_index]
-				if self.prev_main_script_index != self.main_script_index:
-					if DEBUG_PRINT_PARSE_SCRIPT == 2 or (DEBUG_PRINT_PARSE_SCRIPT == 1 and line.startswith("#")):
-						print line
-
-				if line.startswith("#") or line == "":
-					pass
-				elif line.startswith("load_song "):
-					song = line[len("load_song "):]
-					self.main.music.load_music(song)
-				elif line == "play_music":
-					self.main.music.begin()
-				elif line == "stop_music":
-					self.main.music.stop()
-				elif line.startswith("cue_music "):
-					cued = line[len("cue_music "):]
-					self.main.music.cue(int(cued))
-				elif line.startswith("hard_cue_music "):
-					cued = line[len("hard_cue_music "):]
-					self.main.music.cue(int(cued), True)
-				elif line.startswith("transition "):
-					transition = line[len("transition "):]
-					parts = transition.split(" ")
-					grid_filename = parts[0]
-					new_grid = self.load_grid(grid_filename)
-					if parts[1] == "HintedTransition":
-						args = parts[2:]
-						if len(args) > 0:
-							self.transition = eval("HintedTransition(self.main, self.grid, new_grid, self.visible_grid, "+string.join(args)+")")
-						else:
-							self.transition = HintedTransition(self.main, self.grid, new_grid, self.visible_grid)
-					else:
-						trans_type = eval(parts[1])
-						length = int(parts[2])
-						self.transition = trans_type(self.main, self.grid, new_grid, self.visible_grid, trans_len = length)
-				elif line.startswith("wait "):
-					wait = line[len("wait "):]
-					if wait.startswith("current_music "):
-						music = int(wait[len("current_music "):])
-						if self.main.music.current != music:
-							stop = True
-					elif wait.startswith("music_pos "):
-						pos = float(wait[len("music_pos "):])
-						if not (self.main.music.prev_sound_pos < pos and (self.main.music.sound_pos >= pos or self.main.music.sound_pos < self.main.music.prev_sound_pos)):
-							stop = True
-					elif wait.startswith("delay "):
-						delay = long(wait[len("delay "):])
-						self.main_script[self.main_script_index] = "wait frame "+str(self.current_frame + delay)
-						stop = True
-					elif wait.startswith("frame "):
-						frame = long(wait[len("frame "):])
-						if self.current_frame < frame:
-							stop = True
-					elif wait == "end_transition":
-						if self.transition != None:
-							stop = True
-					elif wait == "enemies_dead":
-						count = 0
-						for npc in self.npcs:
-							if npc.is_bad:
-								count += 1
-						if count != 0:
-							stop = True
-				if not stop:
-					self.main_script_index += 1
-			else:
-				stop = True
-
-		self.prev_main_script_index = long(self.main_script_index)
 
 	def update(self):
 		"""
@@ -209,147 +133,158 @@ class World(object):
 		Updates all entities and handles/performs events.
 		Dead entities are pruned in this function.
 		"""
-
-		if not self.player.dead:
-			#Updates the script
-			self.parse_script()
-
-			if self.transition != None:
-				self.transition.update()
-				#Checks out the changed tiles.
-				changes = []
-				for change in self.transition.changed_tiles:
-					if change[1].solid != change[2].solid or change[1].is_a_pit != change[2].is_a_pit:
-						#we play a rumble sound for this tile.
-						match = False
-						for ch in changes:
-							if ch[0] == change[0][0] and ch[1] == "tile_change":
-								match = True
-								break
-						if not match:
-							changes.append((change[0][0], "tile_change"))
-					elif change[1].color != change[2].color:
-						#we play a magical sound for this tile.
-						match = False
-						for ch in changes:
-							if ch[0] == change[0][0] and ch[1] == "tile_change_color":
-								match = True
-								break
-						if not match:
-							changes.append((change[0][0], "tile_change_color"))
-					if type(change[2]) == SpawnerTile:
-						pos = ((change[0][0]+0.5)*TILE_SIZE, (change[0][1]+0.5)*TILE_SIZE)
-						self.npcs.append(Baddie1(self.main, pos))
-				if len(changes) > 0:
-					volume = 1.0 / len(changes)
-					for ch in changes:
-						pos = ((ch[0]+0.5)*TILE_SIZE, 0) #the y doesn't matter.
-						self.play_sound(ch[1], pos, volume)
-				#Finally, we check if the transition has finished.
-				if self.transition.done_transitioning:
-					self.transition = None
-				"""
-				if not self.transition.done_transitioning:
-					if self.transition.stage == 2 and self.transition.delay == 0:
-						for x in xrange(5):
-							pos = ((random.randint(0,self.grid.gridsize[0])*0.5)*TILE_SIZE,
-								   (random.randint(0,self.grid.gridsize[1])*0.5)*TILE_SIZE)
-							self.npcs.append(Baddie1(self.main, pos))
-						self.player.is_hurt = True
-						self.player.hurt = self.player.hurt_length
-
-					if self.transition.stage >= 2 or self.transition.stage == 0:
-						if len(self.npcs) == 0:
-							if self.main.music.current == 2:
-								self.main.music.cue(3)
-						else:
-							if self.main.music.current == 3:
-								self.main.music.cue(2)
-				else:
-					next_grid = self.prep_next_grid()
-					self.transition = HintedTransition(self.main, self.grid, next_grid, self.visible_grid, flat_delay=400)
-			else:
-				if self.main.music.current == 1 and self.main.music.sound_pos >= self.main.music.intro_trans_beats-1:
-					next_grid = self.prep_next_grid()
-					self.transition = HintedTransition(self.main, self.grid, next_grid, self.visible_grid, flat_delay=0, flat_len=1)
-			"""
-
-		#Updates the player.
-		self.player.update()
-
-		if not self.player.dead:
-			#Then updates/prunes NPCs.
-			i = len(self.npcs) - 1
-			while i >= 0:
-				self.npcs[i].update()
-				npc = self.npcs[i]
-				if npc.dead and not (npc.is_dying or npc.falling):
-					del self.npcs[i]
-				i -= 1
-
-			#Then updates/prunes particles.
-			i = len(self.particles) - 1
-			while i >= 0:
-				self.particles[i].update()
-				if self.particles[i].dead:
-					del self.particles[i]
-				i -= 1
-		else:
-			if self.player_is_alive:
-				self.player_is_alive = False
-				self.visible_grid.apply_filter((255,0,0), BLEND_RGB_MIN)
-				self.main.music.stop()
-				self.main.world.play_sound("player_death", self.player.pos)
-		"""
 		for e in self.main.events:
-			if e.type == MOUSEBUTTONDOWN and e.button == 1:
-				pos = (self.visible_grid.offset[0]-e.pos[0]+(TILE_SIZE),
-						self.visible_grid.offset[1]-e.pos[1]+(TILE_SIZE))
-				pos = offset_to_coords(pos)
-				pos = round_coords(pos)
-				pos = ((pos[0]+0.5)*TILE_SIZE, (pos[1]+0.5)*TILE_SIZE)
-				self.npcs.append(Baddie1(self.main, pos))
-		"""
+			if not self.player.dead:
+				if e.type == KEYDOWN and e.key == K_ESCAPE:
+					self.paused = not self.paused
+					self.play_sound("pause_sound", volume=0.5)
+					if self.paused:
+						self.main.music.set_volume(0.025)
+					else:
+						self.main.music.set_volume()
+		if not self.paused or self.player.dead:
+			if not self.player.dead:
+				#Updates the script
+				i = 0
+				while i < len(self.scripts):
+					self.scripts[i].parse_script()
+					if self.scripts[i].dead:
+						del self.scripts[i]
+					else:
+						i += 1
+
+				#Manage Transitions
+				if self.transition != None:
+					self.transition.update()
+					#Checks out the changed tiles.
+					changes = []
+					for change in self.transition.changed_tiles:
+						if change[1].solid != change[2].solid or change[1].is_a_pit != change[2].is_a_pit:
+							#we play a rumble sound for this tile.
+							match = False
+							for ch in changes:
+								if ch[0] == change[0][0] and ch[1] == "tile_change":
+									match = True
+									break
+							if not match:
+								changes.append((change[0][0], "tile_change"))
+						elif change[1].color != change[2].color:
+							#we play a magical sound for this tile.
+							match = False
+							for ch in changes:
+								if ch[0] == change[0][0] and ch[1] == "tile_change_color":
+									match = True
+									break
+							if not match:
+								changes.append((change[0][0], "tile_change_color"))
+						if type(change[2]) == SpawnerTile:
+							pos = ((change[0][0]+0.5)*TILE_SIZE, (change[0][1]+0.5)*TILE_SIZE)
+							self.npcs.append(Baddie1(self.main, pos))
+					if len(changes) > 0:
+						volume = 1.0 / len(changes)
+						for ch in changes:
+							pos = ((ch[0]+0.5)*TILE_SIZE, 0) #the y doesn't matter.
+							self.play_sound(ch[1], pos, volume)
+					#Finally, we check if the transition has finished.
+					if self.transition.done_transitioning:
+						self.transition = None
+					"""
+					if not self.transition.done_transitioning:
+						if self.transition.stage == 2 and self.transition.delay == 0:
+							for x in xrange(5):
+								pos = ((random.randint(0,self.grid.gridsize[0])*0.5)*TILE_SIZE,
+									   (random.randint(0,self.grid.gridsize[1])*0.5)*TILE_SIZE)
+								self.npcs.append(Baddie1(self.main, pos))
+							self.player.is_hurt = True
+							self.player.hurt = self.player.hurt_length
+
+						if self.transition.stage >= 2 or self.transition.stage == 0:
+							if len(self.npcs) == 0:
+								if self.main.music.current == 2:
+									self.main.music.cue(3)
+							else:
+								if self.main.music.current == 3:
+									self.main.music.cue(2)
+					else:
+						next_grid = self.prep_next_grid()
+						self.transition = HintedTransition(self.main, self.grid, next_grid, self.visible_grid, flat_delay=400)
+				else:
+					if self.main.music.current == 1 and self.main.music.sound_pos >= self.main.music.intro_trans_beats-1:
+						next_grid = self.prep_next_grid()
+						self.transition = HintedTransition(self.main, self.grid, next_grid, self.visible_grid, flat_delay=0, flat_len=1)
+				"""
+
+			#Updates the player.
+			self.player.update()
+
+			if not self.player.dead:
+				#Then updates/prunes NPCs.
+				i = len(self.npcs) - 1
+				while i >= 0:
+					self.npcs[i].update()
+					npc = self.npcs[i]
+					if npc.dead and not (npc.is_dying or npc.falling):
+						del self.npcs[i]
+					i -= 1
+
+				#Then updates/prunes particles.
+				i = len(self.particles) - 1
+				while i >= 0:
+					self.particles[i].update()
+					if self.particles[i].dead:
+						del self.particles[i]
+					i -= 1
+			else:
+				if self.player_is_alive:
+					self.player_is_alive = False
+					self.visible_grid.apply_filter((255,0,0), BLEND_RGB_MIN)
+					self.main.music.stop()
+					self.main.world.play_sound("player_death", self.player.pos)
 
 	def move(self):
 		"""
 		World.move - Called by Main.
 		Calls 'move' on all entities.
 		"""
-		self.player.move()
-		if not self.player.dead:
-			for npc in self.npcs:
-				npc.move()
-			for particle in self.particles:
-				particle.move()
+		if not self.paused or self.player.dead:
+			self.player.move()
+			if not self.player.dead:
+				for npc in self.npcs:
+					npc.move()
+				for particle in self.particles:
+					particle.move()
 
-		# === MOVES THE 'CAMERA' ===
-		#first we center it.
-		new_offset = list(self.preferred_offset)
-		if not DEBUG_DISABLE_FOLLOW_PLAYER:
-			#then we check if the player is almost going off of the screen.
-			pl = self.player
-			offset = [0,0]
-			inset = 200
-			rect = pygame.Rect([-new_offset[0]+inset,
-								-new_offset[1]+inset,
-								self.main.screen_size[0]-inset-inset,
-								self.main.screen_size[1]-inset-inset])
-			left = pl.rect.left - rect.right
-			top = pl.rect.top - rect.bottom
-			right = rect.left - pl.rect.right
-			bottom = rect.top - pl.rect.bottom
-			m = max(left,top,right,bottom)
-			if m > 0:
-				if abs(offset[0]) < left: offset[0] = left
-				if abs(offset[1]) < top: offset[1] = top
-				if abs(offset[0]) < right: offset[0] = -right
-				if abs(offset[1]) < bottom: offset[1] = -bottom
+			# === MOVES THE 'CAMERA' ===
+			#first we center it.
+			new_offset = list(self.preferred_offset)
+			if not DEBUG_DISABLE_FOLLOW_PLAYER:
+				#then we check if the player is almost going off of the screen.
+				pl = self.player
+				offset = [0,0]
+				inset = 200
+				rect = pygame.Rect([-new_offset[0]+inset,
+									-new_offset[1]+inset,
+									self.main.screen_size[0]-inset-inset,
+									self.main.screen_size[1]-inset-inset])
+				left = pl.rect.left - rect.right
+				top = pl.rect.top - rect.bottom
+				right = rect.left - pl.rect.right
+				bottom = rect.top - pl.rect.bottom
+				m = max(left,top,right,bottom)
+				if m > 0:
+					if abs(offset[0]) < left: offset[0] = left
+					if abs(offset[1]) < top: offset[1] = top
+					if abs(offset[0]) < right: offset[0] = -right
+					if abs(offset[1]) < bottom: offset[1] = -bottom
 
-				new_offset = (new_offset[0]-offset[0],
-								new_offset[1]-offset[1])
-		#finally, we apply the new offset.
-		self.visible_grid.set_offset(lerp_pos(self.visible_grid.offset, new_offset, 0.1))
+					new_offset = (new_offset[0]-offset[0],
+									new_offset[1]-offset[1])
+			#finally, we apply the new offset.
+			new_offset = lerp_pos(self.visible_grid.offset, new_offset, 0.1)
+			if self.earthquake_amount > 0:
+				new_offset = (new_offset[0] + random.randint(-1,1) * self.earthquake_amount,
+								new_offset[1] + random.randint(-1,1) * self.earthquake_amount)
+			self.visible_grid.set_offset(new_offset)
 
 	def render(self):
 		"""
@@ -390,5 +325,5 @@ class World(object):
 		pos = (int(self.player.pos[0]+offset[0]), int(self.player.pos[1]+offset[1]))
 		pygame.draw.circle(self.main.screen, (255,255,255), pos, 4)
 		"""
-
-		self.current_frame += 1
+		if not self.paused:
+			self.current_frame += 1

@@ -264,6 +264,9 @@ class Tile(object):
 		self.rerender()
 		surface.blit(self.rendered_surface, pos)
 
+class TriggerTile(Tile):
+	pass
+
 class SpawnerTile(Tile):
 	def init(self):
 		self.color = TILE_SPAWNERTILE_COLOR
