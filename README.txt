@@ -7,10 +7,6 @@ For more details, go check out www.pyweek.org.
 
  ===== RUNNING THE GAME =====
 
-There's two files you can run - one that's compiled, another that's pure source-code:
-
-For Window's users, there's the "NeverEndingDungeon.exe" file, which only requires being double-clicked to execute.
-
 To run the source-code for most operating system (Windows, Linux, Mac OS), first make sure the below dependencies
 have been met. After that, simply double-click the file named "NeverEndingDungeon.py", or run the file through console
 if your root "python.exe" file is not from the python27 folder.
@@ -22,7 +18,6 @@ This project can run on Windows XP (or higher).
 This project hasn't been tested yet on other operating systems,
 but it should run on most Linux distributions and some of the most modern Mac OS's.
 
-(NOTE: You will not need these below dependencies if you're going to run the executable.)
 To run the source-code on any OS, you'll need:
 
  - python 2.7.x (I'd recommend 2.7.8, since it's the most stable.)
