@@ -34,3 +34,9 @@ class FadeFromBlack(Fade):
 		p = min(max(self.fade/float(self.fade_length),0.0),1.0)
 		color = lerp_colors((0,0,0),(255,255,255),p)
 		self.main.screen.fill(color,None,special_flags=BLEND_RGB_MULT)
+
+class FadeToBlack(Fade):
+	def render(self):
+		p = min(max(self.fade/float(self.fade_length),0.0),1.0)
+		color = lerp_colors((255,255,255),(0,0,0),p)
+		self.main.screen.fill(color,None,special_flags=BLEND_RGB_MULT)

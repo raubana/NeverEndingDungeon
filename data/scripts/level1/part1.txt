@@ -41,3 +41,5 @@ transition level1/part1/9 LeftToRightWipe 1
 wait end_transition
 play_sound roomlaugh1 0.25
 wait current_music 2
+
+set_main_script level1/part2

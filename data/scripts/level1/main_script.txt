@@ -1,4 +1,1 @@
-script level1/part1
-
-#We load the next part.
-load_script level1/part2
+set_main_script level1/part1

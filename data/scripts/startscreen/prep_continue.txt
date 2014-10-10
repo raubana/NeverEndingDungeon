@@ -7,4 +7,4 @@ wait end_transition
 
 script startscreen/transition
 
-start_newgame
+continue_saved_game

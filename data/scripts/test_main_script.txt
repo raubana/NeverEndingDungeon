@@ -1,7 +1,0 @@
-script test1
-
-script test3
-
-script test2
-
-script killscreen

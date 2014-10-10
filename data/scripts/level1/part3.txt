@@ -19,4 +19,4 @@ cue_music 3
 #transition default_grid SquareTRtoBLwipe 120
 #wait end_transition
 
-load_script level1/part4
+set_main_script level1/part4

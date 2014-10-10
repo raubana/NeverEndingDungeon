@@ -10,6 +10,7 @@ from TransitionSystem import *
 from Script import Script
 
 import random, os
+from libs.FadeSystem import FadeToBlack, FadeFromBlack
 
 
 class World(object):
@@ -26,7 +27,7 @@ class World(object):
 
 		self.transition = None
 		self.silent_transitions = False
-		self.fade = None
+		self.fade = FadeFromBlack(self.main)
 
 		self.earthquake_amount = 0
 		self.earthquake_sound = pygame.mixer.Sound("snds/sfx/earthquake.wav")
@@ -73,7 +74,10 @@ class World(object):
 		if self.main.music.songname != None and self.main.music.current != None:
 			data.append(self.main.music.songname)
 			data.append(str(self.main.music.current))
-		f.write(string.join(data,"\n"))
+		data = string.join(data,"\n")
+		#print "AUTOSAVE: "
+		#print data
+		f.write(data)
 		f.close()
 
 	def check_for_save(self):
@@ -182,13 +186,20 @@ class World(object):
 					else:
 						self.main.music.set_volume()
 		if not self.paused or self.player.dead:
-			#Death-screen fade-away.
-
 			#Updates the fade
 			if self.fade != None:
 				self.fade.update()
 				if self.fade.dead:
-					self.fade = None
+					if self.player.dead:
+						self.main.reset()
+					else:
+						self.fade = None
+			else:
+				#Death-screen fade-away.
+				if self.player.dead:
+					self.fade = FadeToBlack(self.main)
+					self.fade.fade_length = 160
+
 
 			if not self.player.dead:
 				#Updates the script
