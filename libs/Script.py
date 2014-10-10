@@ -94,8 +94,8 @@ class Script(object):
 						running = False #For debugging only. However, it does seem to fix the infinite-loop bug.
 					if not worked and DEBUG_PRINT_PARSE_SCRIPT > 0:
 						print "ERROR: called 'set_script_index' for '"+script_name+"' but it doesn't exist."
-				elif line.startswith("load_song "):
-					song = line[len("load_song "):]
+				elif line.startswith("load_music "):
+					song = line[len("load_music "):]
 					self.world.main.music.load_music(song)
 				elif line == "play_music":
 					self.world.main.music.begin()

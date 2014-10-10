@@ -3,7 +3,7 @@ kill_script script_name
 load_script script_name
 set_main_script script_name
 
-load_song song_name
+load_music music_name
 play_music
 stop_music
 cue_music index

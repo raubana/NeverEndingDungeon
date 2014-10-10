@@ -1,6 +1,6 @@
 autosave
 
-load_song mmnm
+load_music mmnm
 play_music
 wait music_beat 1
 wait music_beat 3

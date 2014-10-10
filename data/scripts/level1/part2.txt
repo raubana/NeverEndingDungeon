@@ -11,7 +11,8 @@ wait end_transition
 transition level1/part2/4 LeftToRightWipe 30
 wait end_transition
 wait delay 45
-transition level1/part2/5 RightToLeftWipe 60
+transition level1/part2/5 RightToLeftWipe 1
 wait end_transition
+wait delay 60
 
 load_script level1/part3

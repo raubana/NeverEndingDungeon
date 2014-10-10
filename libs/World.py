@@ -97,10 +97,12 @@ class World(object):
 		f = open("save.dat")
 		data = f.read().split("\n")
 		f.close()
-		self.scripts = [Script(data[0])]
+		self.scripts = [Script(self, data[0])]
 		if len(data) > 1:
-			self.main.music.load_song(data[1])
+			self.main.music.load_music(data[1])
+			self.main.music.begin()
 			self.main.music.cue(int(data[2]), True)
+			self.main.music.play_next()
 
 	def play_sound(self, soundname, offset = None, volume = 1.0):
 		#first we check if the sound exists
@@ -198,7 +200,7 @@ class World(object):
 				#Death-screen fade-away.
 				if self.player.dead:
 					self.fade = FadeToBlack(self.main)
-					self.fade.fade_length = 160
+					self.fade.fade_length = 280
 
 
 			if not self.player.dead:

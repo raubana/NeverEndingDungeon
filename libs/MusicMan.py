@@ -72,6 +72,18 @@ class MusicMan(object):
 		pygame.mixer.music.stop()
 		self.current = None
 
+	def play_next(self):
+		self.current = int(self.cued)
+		if self.current == 1:
+			self.cued = 2
+		else:
+			self.cued = None
+		pygame.mixer.music.load(self.get_current_soundname())
+		pygame.mixer.music.play(-1, (60.0/self.bpm)*self.sound_pos)
+		self.sound_start = time.time()-(60.0/self.bpm)*self.sound_pos
+		pygame.mixer.music.set_volume(self.volume)
+		self.bpm = float(self.next_bpm)
+
 	def update(self):
 		if self.current != None:
 			self.prev_beat = float(self.beat)
@@ -100,13 +112,4 @@ class MusicMan(object):
 					else:
 						play_next = True
 					if play_next:
-						self.current = int(self.cued)
-						if self.current == 1:
-							self.cued = 2
-						else:
-							self.cued = None
-						pygame.mixer.music.load(self.get_current_soundname())
-						pygame.mixer.music.play(-1, (60.0/self.bpm)*self.sound_pos)
-						self.sound_start = time.time()-(60.0/self.bpm)*self.sound_pos
-						pygame.mixer.music.set_volume(self.volume)
-						self.bpm = float(self.next_bpm)
+						self.play_next()
