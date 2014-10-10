@@ -1,0 +1,7 @@
+#Now the game can begin!
+enable_player_controls
+set_grid default_grid
+force_full_rerender
+set_preferred_offset [(self.world.main.screen_size[0]-(self.world.grid.gridsize[0]*TILE_SIZE))/2.0, (self.world.main.screen_size[1]-(self.world.grid.gridsize[1]*TILE_SIZE))/2.0]
+set_offset self.world.preferred_offset
+start_newgame

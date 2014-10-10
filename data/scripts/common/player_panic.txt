@@ -4,5 +4,5 @@ wait delay 15
 set_player_direction 0
 wait delay 30
 set_player_direction 2
-wait delay 30
+wait delay 29
 set_script_index common/player_panic 3

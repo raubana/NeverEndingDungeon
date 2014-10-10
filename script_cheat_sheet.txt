@@ -1,0 +1,51 @@
+add_script script_name
+kill_script script_name
+load_script script_name
+set_main_script script_name
+
+load_song song_name
+play_music
+stop_music
+cue_music index
+hard_cue_music index
+
+play_sound sound_name volume
+
+set_fade fade_class_name
+
+force_full_rerender
+set_grid grid_name
+transition new_grid_name transition_class_name transition_length
+transition new_grid_name HintedTransition args
+
+disable_update_offset
+enable_update_offset
+set_offset list_object
+set_preferred_offset list_object
+
+disable_player_controls
+enable_player_controls
+set_player_direction integer
+set_player_walking boolean
+set_player_pos list_object
+
+earthquake integer
+
+start_newgame
+continue_saved_game
+
+wait current_music integer
+wait music_pos float
+wait music_beat int
+
+wait delay number_of_frames
+
+wait end_transition
+wait end_fade
+
+wait enemies_dead
+
+wait trigger_tile tile_id
+wait trigger_tile_touch tile_id
+
+

@@ -1,0 +1,2 @@
+transition level1/part2/1 HintedTransition flat_type = TLtoBRwipe
+wait end_transition

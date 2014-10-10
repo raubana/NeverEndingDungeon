@@ -1,0 +1,4 @@
+script level1/part1
+
+#We load the next part.
+load_script level1/part2

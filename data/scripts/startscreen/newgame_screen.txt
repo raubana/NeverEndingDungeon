@@ -1,4 +1,7 @@
 script startscreen/intro_sequence
+set_fade FadeFromBlack
+
+load_script startscreen/transition
 
 #We setup the grid and the player's position.
 set_grid startscreen/newgame
@@ -17,7 +20,7 @@ set_player_direction 1
 set_player_walking True
 
 #We wait a moment for the player to enter the cave more.
-wait trigger_tile 2
+wait delay 90
 
 #The player stops and looks around...
 set_player_walking False
@@ -29,9 +32,10 @@ wait delay 25
 
 #Suddenly, there's this rumbling...
 earthquake 1
+play_sound room1 0.25
 wait delay 30
 set_player_direction 3
-wait delay 120
+wait delay 250
 earthquake 0
 wait delay 90
 
@@ -44,10 +48,12 @@ set_player_direction 0
 wait delay 10
 
 #Suddenly, the rumbling starts again, and the cave shuts closed!
-earthquake 2
+earthquake 1
+play_sound room2 0.25
 wait delay 10
 add_script common/player_panic
-wait delay 180
+wait delay 300
+play_sound roomlaugh1 0.1
 transition startscreen/closed_grid_with_triggers BottomToTopWipe 120
 wait end_transition
 earthquake 0
@@ -62,7 +68,6 @@ set_player_walking False
 set_player_direction 3
 wait delay 60
 
-#Now the game can begin!
-enable_player_controls
-transition default_grid BottomToTopWipe 1
-start_newgame
+set_player_pos [self.world.player.pos[0]-(3*TILE_SIZE), self.world.player.pos[1]]
+
+load_script startscreen/transition

@@ -61,10 +61,10 @@ class MusicMan(object):
 
 		self.bpm = float(self.next_bpm)
 
-		self.beat = 0.0
-		self.prev_beat = 0.0
+		self.beat = 0
+		self.prev_beat = -1
 		self.sound_pos = 0.0
-		self.prev_sound_pos = 0.0
+		self.prev_sound_pos = -1.0
 
 	def stop(self):
 		pygame.mixer.music.stop()
@@ -81,9 +81,9 @@ class MusicMan(object):
 			elif self.current == 2: self.sound_pos = dif % (self.main_loop_beats)
 			elif self.current == 3: self.sound_pos = dif % (self.main_loop_quiet_beats)
 
-			self.beat = self.sound_pos % 4
+			self.beat = int(self.sound_pos) % 4
 			if self.cued != self.current and self.cued != None:
-				if int(self.beat) != int(self.prev_beat):
+				if self.beat != self.prev_beat:
 					play_next = False
 					if self.synced:
 						if (self.current == 0 and self.cued == 1):

@@ -2,10 +2,11 @@ import pygame
 
 from TransitionSystem import *
 from TileSystem import *
+from FadeSystem import *
 
 import string
 
-DEBUG_PRINT_PARSE_SCRIPT = 2 #0 is off, 1 is just the comments, and 2 is everything.
+DEBUG_PRINT_PARSE_SCRIPT = 0 #0 is off, 1 is just the comments, and 2 is everything.
 
 class Script(object):
 	def __init__(self, world, filename):
@@ -64,7 +65,7 @@ class Script(object):
 						print "ERROR: called 'kill_script' for '"+script_name+"' but it doesn't exist."
 				elif line.startswith("load_script "):
 					script_name = line[len("load_script "):]
-					self.load_script(script_name)
+					self.set_script(script_name)
 				elif line.startswith("set_main_script "):
 					script_name = line[len("set_main_script "):]
 					if len(self.world.scripts) == 0:
@@ -99,6 +100,17 @@ class Script(object):
 				elif line.startswith("hard_cue_music "):
 					cued = line[len("hard_cue_music "):]
 					self.world.main.music.cue(int(cued), True)
+				elif line.startswith("play_sound "):
+					play = line[len("play_sound "):]
+					parts = play.split(" ")
+					sound_name = parts[0]
+					volume = float(parts[1])
+					self.world.play_sound(sound_name, volume = volume)
+				elif line.startswith("set_fade "):
+					self.world.fade = eval(line[len("set_fade "):]+"(self.world.main)")
+				elif line == "force_full_rerender":
+					self.world.visible_grid.flag_for_rerender()
+					self.world.visible_grid.force_full_rerender = True
 				elif line.startswith("set_grid "):
 					grid_filename = line[len("set_grid "):]
 					self.world.transition = None
@@ -170,6 +182,11 @@ class Script(object):
 						if self.world.main.music.prev_sound_pos < pos and (self.world.main.music.sound_pos >= pos or self.world.main.music.sound_pos < self.world.main.music.prev_sound_pos):
 							iterate = True
 							running = True
+					elif wait.startswith("music_beat "):
+						beat = int(wait[len("music_beat "):])
+						if self.world.main.music.beat == beat and (self.world.main.music.beat != self.world.main.music.prev_beat):
+							iterate = True
+							running = True
 					elif wait.startswith("delay "):
 						delay = long(wait[len("delay "):])
 						self.script[self.script_index] = "wait frame "+str(self.world.current_frame + delay)
@@ -181,6 +198,10 @@ class Script(object):
 							running = True
 					elif wait == "end_transition":
 						if self.world.transition == None:
+							iterate = True
+							running = True
+					elif wait == "end_fade":
+						if self.world.fade == None or self.world.fade.done_fading:
 							iterate = True
 							running = True
 					elif wait == "enemies_dead":

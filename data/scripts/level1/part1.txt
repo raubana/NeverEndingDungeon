@@ -1,0 +1,32 @@
+load_song mmnm
+play_music
+wait music_beat 1
+transition level1/part1/1 LeftToRightWipe 1
+wait end_transition
+wait music_beat 1
+transition level1/part1/2 LeftToRightWipe 1
+wait end_transition
+wait music_beat 1
+transition level1/part1/3 LeftToRightWipe 1
+wait end_transition
+wait music_beat 1
+transition level1/part1/4 LeftToRightWipe 1
+wait end_transition
+wait music_beat 1
+transition level1/part1/5 LeftToRightWipe 1
+wait end_transition
+wait music_beat 3
+transition level1/part1/6 LeftToRightWipe 1
+wait end_transition
+wait music_beat 1
+transition level1/part1/7 LeftToRightWipe 1
+wait end_transition
+wait music_beat 3
+transition level1/part1/8 LeftToRightWipe 1
+wait end_transition
+cue_music 1
+wait current_music 1
+transition level1/part1/9 LeftToRightWipe 1
+wait end_transition
+play_sound roomlaugh1 0.1
+wait current_music 2

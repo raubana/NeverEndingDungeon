@@ -252,6 +252,14 @@ class TopToBottomWipe(Transition):
 		else:
 			return self.trans_old_grid.tiles[tile_pos[1]][tile_pos[0]]
 
+class TLtoBRwipe(Transition):
+	def get_transition_tile(self, tile_pos, trans_percent):
+		total = max(self.size)*trans_percent
+		if total >= tile_pos[0]+tile_pos[1]:
+			return self.trans_new_grid.tiles[tile_pos[1]][tile_pos[0]]
+		else:
+			return self.trans_old_grid.tiles[tile_pos[1]][tile_pos[0]]
+
 class SquareTLtoBRwipe(Transition):
 	def get_transition_tile(self, tile_pos, trans_percent):
 		total = max(self.size)*trans_percent

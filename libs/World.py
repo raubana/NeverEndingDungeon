@@ -59,6 +59,10 @@ class World(object):
 		self.sounds["death_music"] = pygame.mixer.Sound("snds/songs/death_music.ogg")
 		self.sounds["pause_sound"] = pygame.mixer.Sound("snds/misc/pause_sound.wav")
 
+		self.sounds["room1"] = pygame.mixer.Sound("snds/vo/room1.ogg")
+		self.sounds["room2"] = pygame.mixer.Sound("snds/vo/room2.ogg")
+		self.sounds["roomlaugh1"] = pygame.mixer.Sound("snds/vo/roomlaugh1.ogg")
+
 		self.scripts = []
 
 		self.load_startup_script()
@@ -129,6 +133,12 @@ class World(object):
 				elif s in "123456789":
 					row.append(TriggerTile(self.main))
 					row[-1].id = s
+				elif s == "g":
+					row.append(GrassTile(self.main))
+				elif s == "d":
+					row.append(DirtFloorTile(self.main))
+				elif s == "D":
+					row.append(DirtWallTile(self.main))
 				elif s == "W":
 					row.append(WallTile(self.main))
 				elif s == "P":
@@ -155,6 +165,12 @@ class World(object):
 					else:
 						self.main.music.set_volume()
 		if not self.paused or self.player.dead:
+			#Updates the fade
+			if self.fade != None:
+				self.fade.update()
+				if self.fade.dead:
+					self.fade = None
+
 			if not self.player.dead:
 				#Updates the script
 				i = 0
@@ -268,7 +284,7 @@ class World(object):
 
 			# === MOVES THE 'CAMERA' ===
 			#first we center it.
-			new_offset = list(self.preferred_offset)
+			new_offset = [float(self.preferred_offset[0]), float(self.preferred_offset[1])]
 			if not self.disable_update_offset:
 				#then we check if the player is almost going off of the screen.
 				pl = self.player
@@ -289,13 +305,13 @@ class World(object):
 					if abs(offset[0]) < right: offset[0] = -right
 					if abs(offset[1]) < bottom: offset[1] = -bottom
 
-					new_offset = (new_offset[0]-offset[0],
-									new_offset[1]-offset[1])
-			#finally, we apply the new offset.
-			new_offset = lerp_pos(self.visible_grid.offset, new_offset, 0.1)
+					new_offset = [new_offset[0]-offset[0],
+									new_offset[1]-offset[1]]
 			if self.earthquake_amount > 0:
-				new_offset = (new_offset[0] + random.randint(-1,1) * self.earthquake_amount,
-								new_offset[1] + random.randint(-1,1) * self.earthquake_amount)
+				new_offset = [new_offset[0] + random.randint(-1,1) * self.earthquake_amount,
+								new_offset[1] + random.randint(-1,1) * self.earthquake_amount]
+			#finally, we apply the new offset.
+			#new_offset = lerp_pos(self.visible_grid.offset, new_offset, 0.1)
 			self.visible_grid.set_offset(new_offset)
 
 	def render(self):
@@ -339,10 +355,14 @@ class World(object):
 		"""
 
 		#we do letter-boxes for when the player doesn't have control.
-		size = 50
-		color = (192,192,192)
-		self.main.screen.fill(color, (0,0,self.main.screen_size[0],size), special_flags=BLEND_RGB_MULT)
-		self.main.screen.fill(color, (0,self.main.screen_size[1]-size,self.main.screen_size[0],size), special_flags=BLEND_RGB_MULT)
+		if self.player.controls_disabled:
+			size = 50
+			color = (192,192,192)
+			self.main.screen.fill(color, (0,0,self.main.screen_size[0],size), special_flags=BLEND_RGB_MULT)
+			self.main.screen.fill(color, (0,self.main.screen_size[1]-size,self.main.screen_size[0],size), special_flags=BLEND_RGB_MULT)
+
+		if self.fade != None:
+			self.fade.render()
 
 		#We increment the current frame number.
 		if not self.paused:

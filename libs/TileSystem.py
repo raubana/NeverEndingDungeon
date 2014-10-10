@@ -12,7 +12,10 @@ import random, math
 TILE_SIZE = 48  # The 2D size of a side of a single tile in pixels.
 
 TILE_FLOOR_COLOR = (96,96,96)
-TILE_TRIGGERTILE_COLOR = lerp_colors(TILE_FLOOR_COLOR,(255,0,0),0.1)
+TILE_GRASSTILE_COLOR = (100,165,75)
+TILE_DIRTWALLTILE_COLOR = (85,50,25)
+TILE_DIRTFLOORTILE_COLOR = (135,100,55)
+TILE_TRIGGERTILE_COLOR = TILE_FLOOR_COLOR#lerp_colors(TILE_FLOOR_COLOR,(255,0,0),0.1)
 TILE_SPAWNERTILE_COLOR = (192,192,127)
 TILE_FLATTENED_COLOR = (127,127,127)
 TILE_WALLTILE_COLOR = (64,127,192)
@@ -260,10 +263,29 @@ class Tile(object):
 					p4 = (TILE_SIZE-self.outline_size,TILE_SIZE-self.outline_size)
 					pygame.draw.polygon(self.rendered_surface, c1, ((0,0),(TILE_SIZE,0),p2,p3,p1,(0,TILE_SIZE)))
 					pygame.draw.polygon(self.rendered_surface, c2, ((TILE_SIZE,TILE_SIZE),(0,TILE_SIZE),p1,p4,p2,(TILE_SIZE,0)))
+			else:
+				self.rendered_surface.fill(color)
 
 	def render(self, surface, pos):
 		self.rerender()
 		surface.blit(self.rendered_surface, pos)
+
+class GrassTile(Tile):
+	def init(self):
+		self.color = TILE_GRASSTILE_COLOR
+		self.outline_size = 0
+
+class DirtWallTile(Tile):
+	def init(self):
+		self.color = TILE_DIRTWALLTILE_COLOR
+		self.outline_strength = 0.35
+		self.outline_size = 3
+		self.outline_type = OUTLINE_OUTSET
+
+class DirtFloorTile(Tile):
+	def init(self):
+		self.color = TILE_DIRTFLOORTILE_COLOR
+		self.outline_size = 0
 
 class TriggerTile(Tile):
 	def init(self):
@@ -328,6 +350,8 @@ class VisibleGrid(object):
 			for x in xrange(self.gridsize[0]):
 				self.rendered_surface.blit(self.wall_texture, (x*TILE_SIZE,y*TILE_SIZE))
 
+		self.force_full_rerender = False
+
 	def apply_filter(self, filter_color, filter_type):
 		self.filter = filter_type
 		self.filter_color = filter_color
@@ -363,21 +387,21 @@ class VisibleGrid(object):
 		Rerendering is not the same as Rendering. Rerendering fixes problems with the pre-rendered surface that is
 		then rendered to the screen. However, calling "rerender" does not directly affect the screen.
 		"""
-		if self.flagged_for_rerender or DEBUG_FORCE_FULL_RERENDER:
+		if self.flagged_for_rerender or self.force_full_rerender or DEBUG_FORCE_FULL_RERENDER:
 			self.flagged_for_rerender = False
 
 			coord_dif = (self.coords[0]-self.prev_coords[0], self.coords[1]-self.prev_coords[1])
 
 			#first we try to reuse some of the old stuff again.
 			if (coord_dif[0] != 0 or coord_dif[1] != 0) and abs(coord_dif[0]) < self.gridsize[0] and abs(coord_dif[1]) < self.gridsize[1]:
-				if not DEBUG_FORCE_FULL_RERENDER:
+				if not (self.force_full_rerender or DEBUG_FORCE_FULL_RERENDER):
 					self.rendered_surface.blit(self.rendered_surface,(-coord_dif[0]*TILE_SIZE, -coord_dif[1]*TILE_SIZE))
 
 			# next we check for any tiles that need to be rendered to the surface,
 			# including those that may have simply changed their appearance.
 			for x in xrange(self.gridsize[0]):
 				for y in xrange(self.gridsize[1]):
-					is_new_tile = bool(DEBUG_FORCE_FULL_RERENDER)
+					is_new_tile = self.force_full_rerender or DEBUG_FORCE_FULL_RERENDER
 					is_new_tile = is_new_tile or (coord_dif[0] < 0 and x < -coord_dif[0])
 					is_new_tile = is_new_tile or (coord_dif[1] < 0 and y < -coord_dif[1])
 					is_new_tile = is_new_tile or (coord_dif[0] > 0 and x >= self.gridsize[0]-coord_dif[0])
@@ -399,6 +423,8 @@ class VisibleGrid(object):
 
 					if self.filter != 0:
 						self.rendered_surface.fill(self.filter_color, (x*TILE_SIZE,y*TILE_SIZE, TILE_SIZE, TILE_SIZE), special_flags=self.filter)
+
+			self.force_full_rerender = False
 
 	def render(self):
 		"""
