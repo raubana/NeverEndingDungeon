@@ -1,0 +1,7 @@
+set_grid startscreen/newgame_angryface_mouthopen
+force_full_rerender
+wait delay 15
+set_grid startscreen/newgame_angryface_mouthclosed
+force_full_rerender
+wait delay 15
+set_script_index startscreen/face_talk 0

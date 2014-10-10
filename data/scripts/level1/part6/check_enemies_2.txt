@@ -1,0 +1,2 @@
+wait enemies_dead
+set_script_index level1/part6 30

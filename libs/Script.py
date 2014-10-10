@@ -97,8 +97,12 @@ class Script(object):
 				elif line.startswith("load_music "):
 					song = line[len("load_music "):]
 					self.world.main.music.load_music(song)
-				elif line == "play_music":
-					self.world.main.music.begin()
+				elif line.startswith("play_music"):
+					if line == "play_music":
+						self.world.main.music.begin()
+					else:
+						part = int(line[len("play_music "):])
+						self.world.main.music.begin(part)
 				elif line == "stop_music":
 					self.world.main.music.stop()
 				elif line.startswith("cue_music "):
@@ -162,6 +166,9 @@ class Script(object):
 				elif line.startswith("set_player_pos "):
 					pos = eval(line[len("set_player_pos "):])
 					self.world.player.pos = pos
+				elif line.startswith("set_player_thought "):
+					thought = line[len("set_player_thought "):]
+					self.world.player.thought_sprite.set_frame(thought)
 				elif line.startswith("earthquake "):
 					prev_quake = int(self.world.earthquake_amount)
 					self.world.earthquake_amount = int(line[len("earthquake "):])
@@ -208,7 +215,7 @@ class Script(object):
 							iterate = True
 							running = True
 					elif wait == "end_fade":
-						if self.world.fade == None or self.world.fade.done_fading:
+						if self.world.fade == None or self.world.fade.dead:
 							iterate = True
 							running = True
 					elif wait == "enemies_dead":

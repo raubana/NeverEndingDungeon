@@ -16,7 +16,8 @@ TILE_GRASSTILE_COLOR = (100,165,75)
 TILE_DIRTWALLTILE_COLOR = (85,50,25)
 TILE_DIRTFLOORTILE_COLOR = (135,100,55)
 TILE_TRIGGERTILE_COLOR = TILE_FLOOR_COLOR#lerp_colors(TILE_FLOOR_COLOR,(255,0,0),0.1)
-TILE_SPAWNERTILE_COLOR = (192,192,127)
+TILE_SPAWNER1TILE_COLOR = (192,192,127)
+TILE_SPAWNER2TILE_COLOR = (127,127,192)
 TILE_FLATTENED_COLOR = (127,127,127)
 TILE_WALLTILE_COLOR = (64,127,192)
 TILE_PIT_COLOR = (0,0,0)
@@ -277,6 +278,7 @@ class GrassTile(Tile):
 
 class DirtWallTile(Tile):
 	def init(self):
+		self.solid = True
 		self.color = TILE_DIRTWALLTILE_COLOR
 		self.outline_strength = 0.35
 		self.outline_size = 3
@@ -292,9 +294,13 @@ class TriggerTile(Tile):
 		self.id = "1"
 		self.color = TILE_TRIGGERTILE_COLOR
 
-class SpawnerTile(Tile):
+class Spawner1Tile(Tile):
 	def init(self):
-		self.color = TILE_SPAWNERTILE_COLOR
+		self.color = TILE_SPAWNER1TILE_COLOR
+
+class Spawner2Tile(Tile):
+	def init(self):
+		self.color = TILE_SPAWNER2TILE_COLOR
 
 class WallTile(Tile):
 	def init(self):

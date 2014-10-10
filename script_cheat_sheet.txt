@@ -2,6 +2,7 @@ add_script script_name
 kill_script script_name
 load_script script_name
 set_main_script script_name
+set_script_index script_name index
 
 load_music music_name
 play_music

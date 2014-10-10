@@ -1,1 +1,5 @@
-#TODO: Add intro sequence here.
+disable_player_controls
+set_fade IntroFadeSequence
+wait end_fade
+set_fade FadeFromBlack
+enable_player_controls

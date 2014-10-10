@@ -26,6 +26,8 @@ class Entity(object):
 		self.fall = 0
 		self.fall_length = 60
 
+		self.speed = 2.0
+
 		self.init()
 
 	def init(self):

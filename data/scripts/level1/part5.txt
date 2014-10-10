@@ -1,11 +1,11 @@
-autosave
+#autosave
 
 transition level1/part5/1 HintedTransition
 wait end_transition
 wait enemies_dead
 wait delay 60
 
-#Oh man, now the room's pissed.
+#The walls drop out.
 earthquake 1
 wait delay 120
 earthquake 0
@@ -14,6 +14,16 @@ transition level1/part5/2 TLtoBRwipe 60
 wait end_transition
 wait enemies_dead
 wait delay 60
-cue_music 3
 
-load_script killscreen
+#Now the room's pissed.
+play_sound roomgrowl1 0.35
+earthquake 2
+wait delay 120
+earthquake 0
+wait delay 45
+transition level1/part5/3 HintedTransition
+wait end_transition
+wait enemies_dead
+wait delay 60
+
+load_script level1/part6

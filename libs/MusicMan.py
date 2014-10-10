@@ -54,8 +54,8 @@ class MusicMan(object):
 		elif self.current == 2: return "snds/songs/"+self.songname+"/"+self.songname+"_main_loop.ogg"
 		elif self.current == 3: return "snds/songs/"+self.songname+"/"+self.songname+"_main_quiet_loop.ogg"
 
-	def begin(self):
-		self.current = 0
+	def begin(self, part = 0):
+		self.current = part
 		pygame.mixer.music.load(self.get_current_soundname())
 		pygame.mixer.music.play(-1)
 		self.sound_start = time.time()
@@ -71,6 +71,10 @@ class MusicMan(object):
 	def stop(self):
 		pygame.mixer.music.stop()
 		self.current = None
+		self.beat = 0
+		self.prev_beat = -1
+		self.sound_pos = 0.0
+		self.prev_sound_pos = -1.0
 
 	def play_next(self):
 		self.current = int(self.cued)

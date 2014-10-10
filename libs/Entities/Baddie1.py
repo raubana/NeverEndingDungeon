@@ -31,6 +31,9 @@ class Baddie1(Entity):
 
 		self.is_bad = True
 
+		self.speed = 1.5
+		self.shit_path_freq = 0.025
+
 	def hurt_me(self):
 		self.sprite.set_frame("1")
 		self.path_update = int(self.path_update_length)
@@ -45,7 +48,7 @@ class Baddie1(Entity):
 	def update(self):
 		#we check to see which direction we'll be moving
 		self.vec = [0,0]
-		speed = 1.5
+		speed = self.speed
 
 		self.coords = round_coords((float(self.pos[0])/TILE_SIZE, float(self.pos[1])/TILE_SIZE))
 
@@ -132,7 +135,8 @@ class Baddie1(Entity):
 					else:
 						pos = self.coords
 					self.path = self.main.world.grid.get_path(pos,
-									(self.main.world.player.pos[0]/TILE_SIZE, self.main.world.player.pos[1]/TILE_SIZE))
+									(self.main.world.player.pos[0]/TILE_SIZE, self.main.world.player.pos[1]/TILE_SIZE),
+									self.shit_path_freq)
 		else:
 			#Update Fall
 			if self.fall != 0:

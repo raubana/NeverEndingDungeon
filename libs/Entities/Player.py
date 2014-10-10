@@ -5,6 +5,7 @@ from Entity import Entity
 from ..Sprite import *
 from ..TileSystem import TILE_SIZE, round_coords
 from ..common import lerp_pos
+from Drops.Heart import Heart
 
 
 DEBUG_PLAYER_INVINCIBLE = False
@@ -18,6 +19,9 @@ class Player(Entity):
 		self.sprite = Sprite(self.main, "imgs/sprites/player", 2.0)
 		self.sprite.set_frame("walk1")
 		self.sword_sprite = Sprite(self.main, "imgs/sprites/player_sword", 2.0)
+		self.thought_sprite = Sprite(self.main, "imgs/sprites/player_thoughts", 2.0, False)
+
+		self.thought_sprite.set_frame("none")
 
 		self.direction = 3
 
@@ -41,10 +45,34 @@ class Player(Entity):
 		self.dying_length = 140
 
 		self.prev_pos = tuple(self.pos)
-		self.health = 8
+		self.health = 4
+		self.max_health = 4
+
+		self.show_health = 0
+		self.showing_health = False
+		self.show_health_length = 45
 		self.vec = [0,0]
 
+		self.speed = 3.0
+
 		self.controls_disabled = False
+
+	def heal(self, amount):
+		new_health = min(self.health+amount, self.max_health)
+		if new_health != self.health:
+			self.health = new_health
+			self.show_health = 0
+			self.showing_health = True
+			self.main.world.play_sound("gained_health",volume=0.25)
+
+			if self.health == 4:
+				self.thought_sprite.set_frame("health_4")
+			elif self.health == 3:
+				self.thought_sprite.set_frame("health_3")
+			elif self.health == 2:
+				self.thought_sprite.set_frame("health_2")
+			elif self.health == 1:
+				self.thought_sprite.set_frame("health_1")
 
 	def hurt_me(self):
 		if DEBUG_PLAYER_INVINCIBLE:
@@ -66,6 +94,19 @@ class Player(Entity):
 			else:
 				self.main.world.play_sound("player_hurt", self.pos)
 
+		if self.health <= 4:
+			self.show_health = 0
+			self.showing_health = True
+
+			if self.health == 4:
+				self.thought_sprite.set_frame("health_4")
+			elif self.health == 3:
+				self.thought_sprite.set_frame("health_3")
+			elif self.health == 2:
+				self.thought_sprite.set_frame("health_2")
+			elif self.health == 1:
+				self.thought_sprite.set_frame("health_1")
+
 	def fall_me(self):
 		if DEBUG_PLAYER_INVINCIBLE:
 			self.falling = False
@@ -81,9 +122,16 @@ class Player(Entity):
 		#we check to see which direction we'll be moving
 		if not self.dead and not self.falling:
 			self.vec = [0,0]
-			speed = 3.0
+			speed = self.speed
 
 			update_walk_sprite = False
+
+			#Drop Collision Detection
+			for drop in self.main.world.drops:
+				if self.rect.colliderect(drop.rect):
+					if type(drop) == Heart and self.health < self.max_health:
+						drop.dead = True
+						self.heal(1)
 
 			#Baddie Collision Detection
 			for npc in self.main.world.npcs:
@@ -239,6 +287,13 @@ class Player(Entity):
 
 			if update_walk_sprite:
 				self.sprite.set_frame("walk" + str(1 + int(self.walk/float(self.walk_length))))
+
+			if not self.controls_disabled:
+				if self.showing_health:
+					self.show_health += 1
+					if self.show_health >= self.show_health_length:
+						self.showing_health = False
+						self.thought_sprite.set_frame("none")
 		else:
 			#Update Death
 			self.vec = (0,0)
@@ -247,6 +302,7 @@ class Player(Entity):
 				if self.dying < self.dying_predelay:
 					pass
 				elif self.dying == self.dying_predelay:
+					self.attacking = False
 					self.main.world.play_sound("death_music", volume=self.main.music.volume*0.75)
 				elif self.dying - self.dying_predelay >= self.dying_length:
 					self.dying = 0
@@ -263,6 +319,7 @@ class Player(Entity):
 				if self.fall < self.dying_predelay:
 					pass
 				elif self.fall == self.dying_predelay:
+					self.attacking = False
 					self.main.world.play_sound("falling", self.pos)
 					self.main.world.play_sound("death_music", volume=self.main.music.volume*0.5)
 				elif self.fall - self.dying_predelay < self.fall_length:
@@ -338,6 +395,8 @@ class Player(Entity):
 			filter = 0
 			sword_rect = None
 			sword_img = None
+			thought_img = self.thought_sprite.get_img()
+			thought_rect = thought_img.get_rect(bottomleft = rect.topright)
 
 			if self.is_hurt:
 				img = img.copy()
@@ -371,3 +430,6 @@ class Player(Entity):
 					self.main.screen.blit(sword_img, sword_rect)
 				if img != None:
 					self.main.screen.blit(img, rect, special_flags=filter)
+
+			if not self.dead:
+				self.main.screen.blit(thought_img, thought_rect)

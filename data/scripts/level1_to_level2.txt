@@ -1,0 +1,7 @@
+stop_music
+autosave
+
+load_music mmsm
+play_music 0
+
+transition default_grid TLtoBRwipe 120

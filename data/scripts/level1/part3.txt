@@ -16,4 +16,4 @@ wait end_transition
 wait enemies_dead
 wait delay 60
 
-set_main_script level1/part4
+set_main_script level1/part5

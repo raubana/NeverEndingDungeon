@@ -35,11 +35,15 @@ wait music_beat 1
 transition level1/part1/8 LeftToRightWipe 1
 wait end_transition
 wait music_pos 7
-cue_music 1
-wait current_music 1
 transition level1/part1/9 LeftToRightWipe 1
-wait end_transition
+stop_music
+wait delay 60
 play_sound roomlaugh1 0.25
+wait delay 60
+
+play_music 1
+cue_music 2
+wait current_music 1
 wait current_music 2
 
 set_main_script level1/part2

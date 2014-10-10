@@ -1,0 +1,59 @@
+#autosave
+
+transition level1/part6/1 HintedTransition hint_len = 30, trans_delay = 180
+wait end_transition
+wait delay 60
+
+transition level1/part6/2 TLtoBRwipe 60
+wait end_transition
+wait delay 120
+
+transition level1/part6/3 LeftToRightWipe 1
+wait end_transition
+wait delay 180
+
+transition level1/part6/4 LeftToRightWipe 1
+wait end_transition
+add_script level1/part6/check_enemies_1
+wait delay 180
+kill_script level1/part6/check_enemies_1
+wait delay 60
+
+transition level1/part6/5 LeftToRightWipe 1
+wait end_transition
+wait delay 120
+
+transition level1/part6/6 LeftToRightWipe 1
+wait end_transition
+add_script level1/part6/check_enemies_2
+wait delay 180
+kill_script level1/part6/check_enemies_2
+wait delay 60
+
+transition level1/part6/7 LeftToRightWipe 1
+wait end_transition
+wait delay 120
+
+transition level1/part6/8 LeftToRightWipe 1
+wait end_transition
+wait delay 180
+
+transition level1/part6/9 TLtoBRwipe 60
+wait end_transition
+wait delay 120
+
+wait enemies_dead
+wait delay 90
+
+transition level1/part6/10 LeftToRightWipe 1
+wait end_transition
+wait delay 120
+
+transition level1/part6/11 LeftToRightWipe 1
+wait end_transition
+wait delay 60
+
+wait enemies_dead
+wait delay 90
+
+set_main_script level1_to_level2

@@ -10,6 +10,8 @@ from TransitionSystem import *
 from Script import Script
 
 import random, os
+from libs.Entities.Baddie2 import Baddie2
+from libs.Entities.Drops.Heart import Heart
 from libs.FadeSystem import FadeToBlackOnDeath, FadeFromBlack
 
 
@@ -42,6 +44,7 @@ class World(object):
 
 		self.npcs = []
 		self.particles = []
+		self.drops = []
 
 		self.preferred_offset = (-((self.grid.gridsize[0]*TILE_SIZE*0.5) - (self.main.screen_size[0]/2)), -((self.grid.gridsize[1]*TILE_SIZE*0.5) - (self.main.screen_size[1]/2)))
 		self.current_offset = list(self.preferred_offset)
@@ -57,6 +60,7 @@ class World(object):
 		self.sounds["falling"] = pygame.mixer.Sound("snds/sfx/falling.wav")
 		self.sounds["player_hurt"] = pygame.mixer.Sound("snds/sfx/player_hurt.wav")
 		self.sounds["player_death"] = pygame.mixer.Sound("snds/sfx/player_death.wav")
+		self.sounds["gained_health"] = pygame.mixer.Sound("snds/sfx/gained_health.wav")
 		self.sounds["sword_swing"] = pygame.mixer.Sound("snds/sfx/sword_swing.wav")
 		self.sounds["tile_change"] = pygame.mixer.Sound("snds/sfx/tile_change.wav")
 		self.sounds["tile_change_color"] = pygame.mixer.Sound("snds/sfx/tile_change_color.wav")
@@ -66,6 +70,9 @@ class World(object):
 		self.sounds["room1"] = pygame.mixer.Sound("snds/vo/room1.ogg")
 		self.sounds["room2"] = pygame.mixer.Sound("snds/vo/room2.ogg")
 		self.sounds["roomlaugh1"] = pygame.mixer.Sound("snds/vo/roomlaugh1.ogg")
+		self.sounds["roomgrowl1"] = pygame.mixer.Sound("snds/vo/roomgrowl1.ogg")
+		self.sounds["roompain1"] = pygame.mixer.Sound("snds/vo/roompain1.ogg")
+		self.sounds["roompain2"] = pygame.mixer.Sound("snds/vo/roompain2.ogg")
 
 		self.scripts = []
 
@@ -146,7 +153,7 @@ class World(object):
 			row = []
 			line = list(data.pop(0))
 			for s in line:
-				if s in "_-wpe":
+				if s in "_-wpef":
 					row.append(Tile(self.main))
 					if s == "-":
 						row[-1].color = lerp_colors(TILE_FLATTENED_COLOR, TILE_FLOOR_COLOR, TILE_HINT_COLOR_STRENGTH)
@@ -155,7 +162,9 @@ class World(object):
 					elif s == "p":
 						row[-1].color = lerp_colors(TILE_FLATTENED_COLOR, TILE_PIT_COLOR, TILE_HINT_COLOR_STRENGTH)
 					elif s == "e":
-						row[-1].color = lerp_colors(TILE_FLATTENED_COLOR, TILE_SPAWNERTILE_COLOR, TILE_HINT_COLOR_STRENGTH)
+						row[-1].color = lerp_colors(TILE_FLATTENED_COLOR, TILE_SPAWNER1TILE_COLOR, TILE_HINT_COLOR_STRENGTH)
+					elif s == "f":
+						row[-1].color = lerp_colors(TILE_FLATTENED_COLOR, TILE_SPAWNER2TILE_COLOR, TILE_HINT_COLOR_STRENGTH)
 				elif s in "123456789":
 					row.append(TriggerTile(self.main))
 					row[-1].id = s
@@ -170,7 +179,9 @@ class World(object):
 				elif s == "P":
 					row.append(PitTile(self.main))
 				elif s == "E":
-					row.append(SpawnerTile(self.main))
+					row.append(Spawner1Tile(self.main))
+				elif s == "F":
+					row.append(Spawner2Tile(self.main))
 			grid.tiles.append(row)
 
 		return grid
@@ -239,9 +250,13 @@ class World(object):
 									break
 							if not match:
 								changes.append((change[0][0], "tile_change_color"))
-						if type(change[2]) == SpawnerTile:
+						t = type(change[2])
+						if t in (Spawner1Tile, Spawner2Tile):
 							pos = ((change[0][0]+0.5)*TILE_SIZE, (change[0][1]+0.5)*TILE_SIZE)
-							self.npcs.append(Baddie1(self.main, pos))
+							if t == Spawner1Tile:
+								self.npcs.append(Baddie1(self.main, pos))
+							elif t == Spawner2Tile:
+								self.npcs.append(Baddie2(self.main, pos))
 					if len(changes) > 0:
 						volume = 1.0 / len(changes)
 						for ch in changes:
@@ -286,6 +301,9 @@ class World(object):
 					self.npcs[i].update()
 					npc = self.npcs[i]
 					if npc.dead and not (npc.is_dying or npc.falling):
+						if npc.is_bad and npc.fall == 0:
+							if self.player.health < self.player.max_health:
+								self.drops.append(Heart(self.main, list(npc.pos)))
 						del self.npcs[i]
 					i -= 1
 
@@ -295,6 +313,14 @@ class World(object):
 					self.particles[i].update()
 					if self.particles[i].dead:
 						del self.particles[i]
+					i -= 1
+
+				#Then updates/prunes drops.
+				i = len(self.drops) - 1
+				while i >= 0:
+					self.drops[i].update()
+					if self.drops[i].dead:
+						del self.drops[i]
 					i -= 1
 			else:
 				if self.player_is_alive:
@@ -315,6 +341,8 @@ class World(object):
 					npc.move()
 				for particle in self.particles:
 					particle.move()
+				for drop in self.drops:
+					drop.move()
 
 			# === MOVES THE 'CAMERA' ===
 			#first we center it.
@@ -354,47 +382,50 @@ class World(object):
 		World.render - Called by Main.
 		Renders the world and it's contents to the screen.
 		"""
-		#first we render the background.
-		self.visible_grid.render()
-		for npc in self.npcs:
-			npc.render()
-		for particle in self.particles:
-			particle.render()
-		self.player.render()
+		if self.fade == None or not self.fade.is_covering_screen:
+			#first we render the background.
+			self.visible_grid.render()
+			for npc in self.npcs:
+				npc.render()
+			for particle in self.particles:
+				particle.render()
+			self.player.render()
+			for drop in self.drops:
+				drop.render()
 
-		offset = self.visible_grid.offset
+			offset = self.visible_grid.offset
 
-		"""
-		for npc in self.npcs:
-			#Draws it's path
-			if len(npc.path) > 2:
-				new_path = []
-				for pos in npc.path:
-					new_path.append((pos[0]+offset[0], pos[1]+offset[1]))
+			"""
+			for npc in self.npcs:
+				#Draws it's path
+				if len(npc.path) > 2:
+					new_path = []
+					for pos in npc.path:
+						new_path.append((pos[0]+offset[0], pos[1]+offset[1]))
 
-				pygame.draw.lines(self.main.screen, (255,255,0), False, new_path, 2)
+					pygame.draw.lines(self.main.screen, (255,255,0), False, new_path, 2)
 
-			#Draws it's current target position
-			if npc.target_pos != None:
-				pos = (npc.target_pos[0]+offset[0], npc.target_pos[1]+offset[1])
-				pygame.draw.circle(self.main.screen, (255,255,0), pos, 4)
+				#Draws it's current target position
+				if npc.target_pos != None:
+					pos = (npc.target_pos[0]+offset[0], npc.target_pos[1]+offset[1])
+					pygame.draw.circle(self.main.screen, (255,255,0), pos, 4)
 
-			#Draws it's coordinates
-			if npc.target_pos != None:
-				pos = (int((npc.coords[0]+0.5)*TILE_SIZE+offset[0]), int((npc.coords[1]+0.5)*TILE_SIZE+offset[1]))
-				pygame.draw.circle(self.main.screen, (255,255,255), pos, 4)
+				#Draws it's coordinates
+				if npc.target_pos != None:
+					pos = (int((npc.coords[0]+0.5)*TILE_SIZE+offset[0]), int((npc.coords[1]+0.5)*TILE_SIZE+offset[1]))
+					pygame.draw.circle(self.main.screen, (255,255,255), pos, 4)
 
-		#Draws players's coordinates
-		pos = (int(self.player.pos[0]+offset[0]), int(self.player.pos[1]+offset[1]))
-		pygame.draw.circle(self.main.screen, (255,255,255), pos, 4)
-		"""
+			#Draws players's coordinates
+			pos = (int(self.player.pos[0]+offset[0]), int(self.player.pos[1]+offset[1]))
+			pygame.draw.circle(self.main.screen, (255,255,255), pos, 4)
+			"""
 
-		#we do letter-boxes for when the player doesn't have control.
-		if self.player.controls_disabled:
-			size = 75
-			color = (160,160,160)
-			self.main.screen.fill(color, (0,0,self.main.screen_size[0],size), special_flags=BLEND_RGB_MULT)
-			self.main.screen.fill(color, (0,self.main.screen_size[1]-size,self.main.screen_size[0],size), special_flags=BLEND_RGB_MULT)
+			#we do letter-boxes for when the player doesn't have control.
+			if self.player.controls_disabled:
+				size = 75
+				color = (160,160,160)
+				self.main.screen.fill(color, (0,0,self.main.screen_size[0],size), special_flags=BLEND_RGB_MULT)
+				self.main.screen.fill(color, (0,self.main.screen_size[1]-size,self.main.screen_size[0],size), special_flags=BLEND_RGB_MULT)
 
 		if self.fade != None:
 			self.fade.render()
