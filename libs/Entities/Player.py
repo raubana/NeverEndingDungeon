@@ -28,7 +28,7 @@ class Player(Entity):
 		self.attacking = False
 		self.attack = 0
 		self.attack_length = 6
-		self.attack_delay = 6
+		self.attack_delay = 12
 
 		self.is_hurt = False
 		self.hurt = 0
@@ -295,8 +295,8 @@ class Player(Entity):
 							offset = [0,-1]
 						else:
 							offset = [0,1]
-						offset[0] *= 7
-						offset[1] *= 7
+						offset[0] *= 5
+						offset[1] *= 5
 						npc.__hurt__(1,offset)
 
 	def calc_rect(self):

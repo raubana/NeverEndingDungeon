@@ -143,7 +143,7 @@ class Script(object):
 					self.world.disable_update_offset = False
 				elif line.startswith("set_offset "):
 					offset = eval(line[len("set_offset "):])
-					self.world.visible_grid.offset = offset
+					self.world.current_offset = offset
 				elif line.startswith("set_preferred_offset "):
 					offset = eval(line[len("set_preferred_offset "):])
 					self.world.preferred_offset = offset

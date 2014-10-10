@@ -10,7 +10,7 @@ from TransitionSystem import *
 from Script import Script
 
 import random, os
-from libs.FadeSystem import FadeToBlack, FadeFromBlack
+from libs.FadeSystem import FadeToBlackOnDeath, FadeFromBlack
 
 
 class World(object):
@@ -28,6 +28,8 @@ class World(object):
 		self.transition = None
 		self.silent_transitions = False
 		self.fade = FadeFromBlack(self.main)
+		self.fade.pre_delay = 30
+		self.fade.fade_length = 30
 
 		self.earthquake_amount = 0
 		self.earthquake_sound = pygame.mixer.Sound("snds/sfx/earthquake.wav")
@@ -42,6 +44,7 @@ class World(object):
 		self.particles = []
 
 		self.preferred_offset = (-((self.grid.gridsize[0]*TILE_SIZE*0.5) - (self.main.screen_size[0]/2)), -((self.grid.gridsize[1]*TILE_SIZE*0.5) - (self.main.screen_size[1]/2)))
+		self.current_offset = list(self.preferred_offset)
 		self.disable_update_offset = False
 
 		#new_offset = ((0) - (self.main.screen_size[0]/2), (0) - (self.main.screen_size[1]/2))
@@ -199,8 +202,7 @@ class World(object):
 			else:
 				#Death-screen fade-away.
 				if self.player.dead:
-					self.fade = FadeToBlack(self.main)
-					self.fade.fade_length = 280
+					self.fade = FadeToBlackOnDeath(self.main)
 
 
 			if not self.player.dead:
@@ -339,11 +341,12 @@ class World(object):
 
 					new_offset = [new_offset[0]-offset[0],
 									new_offset[1]-offset[1]]
+			#finally, we apply the new offset.
+			new_offset = lerp_pos(self.current_offset, new_offset, 0.1)
+			self.current_offset = new_offset
 			if self.earthquake_amount > 0:
 				new_offset = [new_offset[0] + random.randint(-1,1) * self.earthquake_amount,
 								new_offset[1] + random.randint(-1,1) * self.earthquake_amount]
-			#finally, we apply the new offset.
-			#new_offset = lerp_pos(self.visible_grid.offset, new_offset, 0.1)
 			self.visible_grid.set_offset(new_offset)
 
 	def render(self):
@@ -389,7 +392,7 @@ class World(object):
 		#we do letter-boxes for when the player doesn't have control.
 		if self.player.controls_disabled:
 			size = 75
-			color = (127,127,127)
+			color = (160,160,160)
 			self.main.screen.fill(color, (0,0,self.main.screen_size[0],size), special_flags=BLEND_RGB_MULT)
 			self.main.screen.fill(color, (0,self.main.screen_size[1]-size,self.main.screen_size[0],size), special_flags=BLEND_RGB_MULT)
 

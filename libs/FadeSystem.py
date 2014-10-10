@@ -10,6 +10,7 @@ class Fade(object):
 		self.is_covering_screen = False
 
 		self.fade = 0
+		self.pre_delay = 0
 		self.fade_length = 90
 
 		self.dead = False
@@ -22,7 +23,7 @@ class Fade(object):
 	def update(self):
 		if not self.dead :
 			self.fade += 1
-			if self.fade > self.fade_length + 1:
+			if self.fade > self.fade_length + self.pre_delay + 1:
 				self.dead = True
 
 	def render(self):
@@ -31,12 +32,22 @@ class Fade(object):
 
 class FadeFromBlack(Fade):
 	def render(self):
-		p = min(max(self.fade/float(self.fade_length),0.0),1.0)
+		p = min(max((self.fade-self.pre_delay)/float(self.fade_length),0.0),1.0)
 		color = lerp_colors((0,0,0),(255,255,255),p)
 		self.main.screen.fill(color,None,special_flags=BLEND_RGB_MULT)
 
 class FadeToBlack(Fade):
 	def render(self):
-		p = min(max(self.fade/float(self.fade_length),0.0),1.0)
+		p = min(max((self.fade-self.pre_delay)/float(self.fade_length),0.0),1.0)
+		color = lerp_colors((255,255,255),(0,0,0),p)
+		self.main.screen.fill(color,None,special_flags=BLEND_RGB_MULT)
+
+class FadeToBlackOnDeath(Fade):
+	def init(self):
+		self.pre_delay = 220
+		self.fade_length = 30
+
+	def render(self):
+		p = min(max((self.fade-self.pre_delay)/float(self.fade_length),0.0),1.0)
 		color = lerp_colors((255,255,255),(0,0,0),p)
 		self.main.screen.fill(color,None,special_flags=BLEND_RGB_MULT)
