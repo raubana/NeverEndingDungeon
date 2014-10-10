@@ -1,0 +1,10 @@
+#PLAYER PICKED NEW GAME
+transition startscreen/closed_grid_with_triggers BottomToTopWipe 120
+
+script startscreen/walk_player_into_cave
+
+wait end_transition
+
+script startscreen/transition
+
+start_newgame

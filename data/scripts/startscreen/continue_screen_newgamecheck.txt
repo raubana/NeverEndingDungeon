@@ -1,0 +1,4 @@
+#This script is running.
+wait trigger_tile 2
+
+set_main_script startscreen/prep_continue

@@ -1,0 +1,17 @@
+#We don't have an intro sequence if there's a save file.
+set_fade FadeFromBlack
+
+#We setup the grid and the player's position.
+set_grid startscreen/newgame_continuegame
+set_player_pos [(8+0.5)*TILE_SIZE,(13+0.5)*TILE_SIZE]
+disable_update_offset
+set_preferred_offset [(self.world.main.screen_size[0]-(self.world.grid.gridsize[0]*TILE_SIZE))/2.0, ((self.world.main.screen_size[1]*0.5)-(self.world.grid.gridsize[1]*TILE_SIZE))/2.0]
+set_offset self.world.preferred_offset
+
+#We wait for the player to enter the cave.
+add_script startscreen/continue_screen_newgamecheck
+wait trigger_tile 1
+
+kill_script startscreen/continue_screen_newgamecheck
+
+script startscreen/prep_load_newgame

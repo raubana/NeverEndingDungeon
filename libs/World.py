@@ -9,7 +9,7 @@ from common import lerp_pos, lerp_colors, lerp
 from TransitionSystem import *
 from Script import Script
 
-import random
+import random, os
 
 
 class World(object):
@@ -67,9 +67,21 @@ class World(object):
 
 		self.load_startup_script()
 
+	def autosave(self):
+		f = open("save.dat", 'w')
+		data = [self.scripts[0].filename]
+		if self.main.music.songname != None and self.main.music.current != None:
+			data.append(self.main.music.songname)
+			data.append(str(self.main.music.current))
+		f.write(string.join(data,"\n"))
+		f.close()
+
+	def check_for_save(self):
+		return os.path.exists("save.dat")
+
 	def load_startup_script(self):
 		#This is the script that's loaded when the program is started.
-		if False: # TODO: Check if there's a save-file.
+		if self.check_for_save():
 			self.scripts.insert(0, Script(self, "startscreen/continue_screen"))
 		else:
 			self.scripts.insert(0, Script(self, "startscreen/newgame_screen"))
@@ -78,8 +90,13 @@ class World(object):
 		self.scripts.insert(0, Script(self, "level1/main_script"))
 
 	def continue_saved_game(self):
-		#TODO: Finish this function so players can continue where they left off.
-		pass
+		f = open("save.dat")
+		data = f.read().split("\n")
+		f.close()
+		self.scripts = [Script(data[0])]
+		if len(data) > 1:
+			self.main.music.load_song(data[1])
+			self.main.music.cue(int(data[2]), True)
 
 	def play_sound(self, soundname, offset = None, volume = 1.0):
 		#first we check if the sound exists
@@ -165,6 +182,8 @@ class World(object):
 					else:
 						self.main.music.set_volume()
 		if not self.paused or self.player.dead:
+			#Death-screen fade-away.
+
 			#Updates the fade
 			if self.fade != None:
 				self.fade.update()
@@ -356,8 +375,8 @@ class World(object):
 
 		#we do letter-boxes for when the player doesn't have control.
 		if self.player.controls_disabled:
-			size = 50
-			color = (192,192,192)
+			size = 75
+			color = (127,127,127)
 			self.main.screen.fill(color, (0,0,self.main.screen_size[0],size), special_flags=BLEND_RGB_MULT)
 			self.main.screen.fill(color, (0,self.main.screen_size[1]-size,self.main.screen_size[0],size), special_flags=BLEND_RGB_MULT)
 

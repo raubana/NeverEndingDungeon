@@ -1,2 +1,17 @@
+autosave
+
 transition level1/part2/1 HintedTransition flat_type = TLtoBRwipe
 wait end_transition
+wait delay 90
+transition level1/part2/2 RightToLeftWipe 60
+wait end_transition
+wait delay 90
+transition level1/part2/3 RightToLeftWipe 30
+wait end_transition
+transition level1/part2/4 LeftToRightWipe 30
+wait end_transition
+wait delay 45
+transition level1/part2/5 RightToLeftWipe 60
+wait end_transition
+
+load_script level1/part3

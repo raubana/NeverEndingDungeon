@@ -1,0 +1,7 @@
+#transition level1/part3/3 LeftToRightWipe 1
+#wait end_transition
+#wait enemies_dead
+#wait delay 60
+#cue_music 3
+
+load_script killscreen

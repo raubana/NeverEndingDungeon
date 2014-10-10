@@ -1,0 +1,22 @@
+transition level1/part3/1 HintedTransition
+wait end_transition
+cue_music 3
+wait current_music 3
+wait delay 60
+transition level1/part3/2 LeftToRightWipe 1
+wait end_transition
+wait delay 60
+wait music_beat 0
+earthquake 1
+cue_music 2
+wait current_music 2
+earthquake 0
+transition level1/part3/3 LeftToRightWipe 1
+wait end_transition
+wait enemies_dead
+wait delay 60
+cue_music 3
+#transition default_grid SquareTRtoBLwipe 120
+#wait end_transition
+
+load_script level1/part4

@@ -25,11 +25,13 @@ class MusicMan(object):
 		self.cued = None #0 intro, 1 intro to main, 2 main, 3 main (quiet)
 		self.synced = True
 
+		self.songname = None
+
 		self.volume = 0.4
 
 	def set_volume(self, volume = 0.4):
 		self.volume = volume
-		if self.current:
+		if self.current != None:
 			pygame.mixer.music.set_volume(self.volume)
 
 	def load_music(self, song):

@@ -1,8 +1,6 @@
 script startscreen/intro_sequence
 set_fade FadeFromBlack
 
-load_script startscreen/transition
-
 #We setup the grid and the player's position.
 set_grid startscreen/newgame
 set_player_pos [(8+0.5)*TILE_SIZE,(13+0.5)*TILE_SIZE]
@@ -13,14 +11,7 @@ set_offset self.world.preferred_offset
 #We wait for the player to enter the cave.
 wait trigger_tile 1
 
-#We control the player's character to make him enter the cave more.
-enable_update_offset
-disable_player_controls
-set_player_direction 1
-set_player_walking True
-
-#We wait a moment for the player to enter the cave more.
-wait delay 90
+script startscreen/walk_player_into_cave
 
 #The player stops and looks around...
 set_player_walking False
@@ -32,7 +23,7 @@ wait delay 25
 
 #Suddenly, there's this rumbling...
 earthquake 1
-play_sound room1 0.25
+play_sound room1 0.35
 wait delay 30
 set_player_direction 3
 wait delay 250
@@ -49,7 +40,7 @@ wait delay 10
 
 #Suddenly, the rumbling starts again, and the cave shuts closed!
 earthquake 1
-play_sound room2 0.25
+play_sound room2 0.35
 wait delay 10
 add_script common/player_panic
 wait delay 300
@@ -68,6 +59,6 @@ set_player_walking False
 set_player_direction 3
 wait delay 60
 
-set_player_pos [self.world.player.pos[0]-(3*TILE_SIZE), self.world.player.pos[1]]
+script startscreen/transition
 
-load_script startscreen/transition
+start_newgame

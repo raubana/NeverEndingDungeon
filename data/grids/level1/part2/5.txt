@@ -1,0 +1,10 @@
+13,9
+_PP_P_P_P_PP_
+_PPP_P_P_P_P_
+P_PPP_P_PPP_P
+_P__PP_PPP_P_
+PPP_PPPPP_P_P
+_PPP_P_P_PPPP
+P_P_P_PP_PP_P
+_PPP_PPP_P_P_
+__P_P___P_P_P

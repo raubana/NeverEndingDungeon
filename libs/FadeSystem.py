@@ -10,7 +10,7 @@ class Fade(object):
 		self.is_covering_screen = False
 
 		self.fade = 0
-		self.fade_length = 120
+		self.fade_length = 90
 
 		self.dead = False
 

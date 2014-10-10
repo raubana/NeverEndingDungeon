@@ -6,7 +6,7 @@ from FadeSystem import *
 
 import string
 
-DEBUG_PRINT_PARSE_SCRIPT = 0 #0 is off, 1 is just the comments, and 2 is everything.
+DEBUG_PRINT_PARSE_SCRIPT = 2 #0 is off, 1 is just the comments, and 2 is everything.
 
 class Script(object):
 	def __init__(self, world, filename):
@@ -39,8 +39,9 @@ class Script(object):
 			return
 
 		running = True
-		iterate = True
 		while running:
+			running = True
+			iterate = True
 			if self.script_index < len(self.script):
 				line = self.script[self.script_index]
 				if self.prev_script_index != self.script_index:
@@ -49,6 +50,8 @@ class Script(object):
 
 				if line.startswith("#") or line == "":
 					pass
+				elif line == "autosave":
+					self.world.autosave()
 				elif line.startswith("add_script "):
 					script_name = line[len("add_script "):]
 					self.world.scripts.append(Script(self.world, script_name))
@@ -66,12 +69,15 @@ class Script(object):
 				elif line.startswith("load_script "):
 					script_name = line[len("load_script "):]
 					self.set_script(script_name)
+					iterate = False
 				elif line.startswith("set_main_script "):
 					script_name = line[len("set_main_script "):]
 					if len(self.world.scripts) == 0:
 						self.world.scripts.append(Script(self.world,script_name))
 					else:
-						self.world.scripts[0].load_script(script_name)
+						self.world.scripts[0].set_script(script_name)
+						if self.world.scripts[0] == self:
+							iterate = False
 				elif line.startswith("set_script_index "):
 					worked = False
 					parts = line[len("set_main_script "):].strip().split(" ")

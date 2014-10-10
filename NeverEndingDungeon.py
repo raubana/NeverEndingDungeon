@@ -30,10 +30,6 @@ class Main(object):
 		self.music = MusicMan(self)
 
 	def update(self):
-		for e in self.events:
-			if e.type == KEYDOWN and e.key == K_r:
-				self.reset()
-
 		self.world.update()
 		self.music.update()
 

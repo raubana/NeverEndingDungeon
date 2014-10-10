@@ -1,0 +1,8 @@
+#We control the player's character to make him enter the cave more.
+enable_update_offset
+disable_player_controls
+set_player_direction 1
+set_player_walking True
+
+#We wait a moment for the player to enter the cave more.
+wait delay 90
