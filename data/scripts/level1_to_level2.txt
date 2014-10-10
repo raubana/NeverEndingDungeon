@@ -5,3 +5,6 @@ load_music mmsm
 play_music 0
 
 transition default_grid TLtoBRwipe 120
+wait end_transition
+
+load_script killscreen

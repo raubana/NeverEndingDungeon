@@ -45,7 +45,7 @@ class Player(Entity):
 		self.dying_length = 140
 
 		self.prev_pos = tuple(self.pos)
-		self.health = 4
+		self.health = 3
 		self.max_health = 4
 
 		self.show_health = 0

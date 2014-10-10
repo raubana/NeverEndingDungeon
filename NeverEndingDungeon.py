@@ -19,6 +19,8 @@ class Main(object):
 		self.screen_size = (800,600)
 		self.screen = pygame.display.set_mode(self.screen_size)
 
+		pygame.display.set_caption("The Never Ending Dungeon", "NED")
+
 		self.clock = pygame.time.Clock()
 		self.framerate = 60
 
