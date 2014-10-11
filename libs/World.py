@@ -62,6 +62,7 @@ class World(object):
 		self.sounds["player_death"] = pygame.mixer.Sound("snds/sfx/player_death.wav")
 		self.sounds["gained_health"] = pygame.mixer.Sound("snds/sfx/gained_health.wav")
 		self.sounds["sword_swing"] = pygame.mixer.Sound("snds/sfx/sword_swing.wav")
+		self.sounds["cut_bush"] = pygame.mixer.Sound("snds/sfx/cut_bush.wav")
 		self.sounds["tile_change"] = pygame.mixer.Sound("snds/sfx/tile_change.wav")
 		self.sounds["tile_change_color"] = pygame.mixer.Sound("snds/sfx/tile_change_color.wav")
 		self.sounds["death_music"] = pygame.mixer.Sound("snds/songs/death_music.ogg")
@@ -191,6 +192,8 @@ class World(object):
 					row.append(CrackedTile(self.main))
 				elif s == "#":
 					row.append(CrackedWallTile(self.main))
+				elif s == "b":
+					row.append(BushTile(self.main))
 			grid.tiles.append(row)
 
 		return grid
@@ -202,7 +205,7 @@ class World(object):
 		Dead entities are pruned in this function.
 		"""
 		for e in self.main.events:
-			if not self.player.dead:
+			if not self.player.dead and not self.player.controls_disabled:
 				if e.type == KEYDOWN and e.key == K_ESCAPE:
 					self.paused = not self.paused
 					self.play_sound("pause_sound", volume=0.5)

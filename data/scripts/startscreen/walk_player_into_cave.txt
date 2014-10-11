@@ -5,4 +5,4 @@ set_player_direction 1
 set_player_walking True
 
 #We wait a moment for the player to enter the cave more.
-wait delay 90
+wait delay 75

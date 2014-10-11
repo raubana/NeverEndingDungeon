@@ -70,6 +70,8 @@ play_sound room2 0.4
 #add_script startscreen/face_talk
 wait delay 10
 add_script common/player_panic
+add_script common/player_sweat
+set_player_thought sweat
 set_grid startscreen/newgame_angryface_mouthopen
 force_full_rerender
 wait delay 220
@@ -88,8 +90,10 @@ wait delay 30
 #(We wait for the player to be centered before stopping him.)
 wait trigger_tile_touch 1
 kill_script common/player_panic
+kill_script common/player_sweat
 
 #The player notices the door has closed! They're trapped!
+set_player_thought none
 set_player_walking False
 set_player_direction 3
 wait delay 60

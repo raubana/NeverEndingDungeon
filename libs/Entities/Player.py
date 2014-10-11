@@ -3,7 +3,7 @@ from pygame.locals import*
 
 from Entity import Entity
 from ..Sprite import *
-from ..TileSystem import TILE_SIZE, round_coords
+from ..TileSystem import TILE_SIZE, round_coords, BushTile, Tile
 from ..common import lerp_pos
 from Drops.Heart import Heart
 
@@ -337,6 +337,8 @@ class Player(Entity):
 
 	def detect_sword_collisions(self):
 		#Sword Attack Collision Detection
+
+		#Baddies
 		sword_rect = self.get_sword_rect()
 		for npc in self.main.world.npcs:
 			if npc.is_bad and not npc.dead:
@@ -355,6 +357,18 @@ class Player(Entity):
 						offset[0] *= 5
 						offset[1] *= 5
 						npc.__hurt__(1,offset)
+
+		#Bushes
+		#first we check the tiles that are actually in the grid.
+		for x in xrange(int(sword_rect.left/TILE_SIZE),int(sword_rect.right/TILE_SIZE)+1):
+			for y in xrange(int(sword_rect.top/TILE_SIZE),int(sword_rect.bottom/TILE_SIZE)+1):
+				if self.main.world.grid.is_legal_coords((x,y)):
+					rect = pygame.Rect([x*TILE_SIZE,y*TILE_SIZE,TILE_SIZE,TILE_SIZE])
+					if rect.colliderect(sword_rect):
+						if type(self.main.world.grid.tiles[y][x]) == BushTile:
+							self.main.world.play_sound("cut_bush", self.pos, volume = 0.5)
+							self.main.world.grid.tiles[y][x] = Tile(self.main)
+							self.main.world.visible_grid.flag_for_rerender()
 
 	def calc_rect(self):
 		self.rect = pygame.Rect([self.pos[0]-(self.size[0]/2),
