@@ -178,7 +178,7 @@ class Script(object):
 						self.world.earthquake_sound_channel.play(self.world.earthquake_sound, -1)
 					elif prev_quake > 0 and self.world.earthquake_amount <= 0:
 						self.world.earthquake_sound_channel.stop()
-					self.world.earthquake_sound_channel.set_volume(min(max(self.world.earthquake_amount*0.33,0.0),1.0))
+					self.world.earthquake_sound_channel.set_volume(min(max(self.world.earthquake_amount*0.25,0.0),1.0))
 				elif line == "start_newgame":
 					self.world.start_new_game()
 				elif line == "continue_saved_game":

@@ -159,6 +159,8 @@ class Credits(object):
 	def update(self):
 		if not self.dead:
 			self.fade += 1
+			if self.fade > self.fade_length * 6 + self.fadeout_delay:
+				self.dead = True
 
 	def render(self):
 		self.main.screen.fill((0,0,0))
@@ -174,17 +176,17 @@ class Credits(object):
 		rect2 = img1.get_rect(midtop = (center[0], center[1]+(gap/2)))
 
 		fade = self.fade
-		if fade < self.fade_length:
-			p = fade / float(self.fade_length)
+		if fade < self.fade_length*2:
+			p = min(fade / float(self.fade_length),1.0)
 			img1.fill((255,255,255,int(255*p)),None,special_flags=BLEND_RGBA_MULT)
 			self.main.screen.blit(img1, rect1)
-		elif fade < self.fade_length*2:
-			p = (fade-self.fade_length) / float(self.fade_length)
+		elif fade < self.fade_length*4 + self.fadeout_delay:
+			p = min((fade-(self.fade_length*2)) / float(self.fade_length),1.0)
 			img2.fill((255,255,255,int(255*p)),None,special_flags=BLEND_RGBA_MULT)
 			self.main.screen.blit(img1, rect1)
 			self.main.screen.blit(img2, rect2)
-		elif fade >= self.fade_length*2 + self.fadeout_delay and fade < self.fade_length*3 + self.fadeout_delay:
-			p = min((fade- (self.fade_length*2 + self.fadeout_delay)) / float(self.fade_length),1.0)
+		elif fade < self.fade_length*5 + self.fadeout_delay:
+			p = max(min((fade-(self.fade_length*4 + self.fadeout_delay)) / float(self.fade_length),1.0),0.0)
 			img1.fill((255,255,255,int(255*(1-p))),None,special_flags=BLEND_RGBA_MULT)
 			img2.fill((255,255,255,int(255*(1-p))),None,special_flags=BLEND_RGBA_MULT)
 			self.main.screen.blit(img1, rect1)

@@ -16,7 +16,10 @@ wait end_transition
 wait delay 90
 
 play_sound roomlonglaugh 0.25
-wait delay 360
+wait delay 90
+earthquake 1
+wait delay 270
+earthquake 0
 play_sound room3 0.4
 wait delay 120
 play_sound room4 0.4

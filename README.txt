@@ -2,6 +2,9 @@ This project was created and programmed by Dylan Raub.
 Special thanks goes to Richard Warden, whom without I wouldn't have even tried Pyweek,
 and who's input and ideas have always been of significant importance to me.
 
+Most of the music was remixed versions of Megaman 3 songs, excluding the song at the end of the game, which Dylan Raub
+composed himself. Credit for the original Megaman 3 songs goes to Yasuaki Fujita.
+
 This project was done as part of October PyWeek #19.
 For more details, go check out www.pyweek.org.
 

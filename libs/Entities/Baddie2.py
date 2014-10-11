@@ -34,4 +34,4 @@ class Baddie2(Baddie1):
 		self.is_bad = True
 
 		self.speed = 3
-		self.shit_path_freq = 0.5
+		self.shit_path_freq = 1.0

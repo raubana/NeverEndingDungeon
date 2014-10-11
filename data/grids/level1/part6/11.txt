@@ -1,5 +1,5 @@
 13,9
-PPP______EPPP
+PPP______FPPP
 PPFP_PPPPP_PP
 PP_P_______PP
 PP_P_P_P_P_PP
@@ -7,4 +7,4 @@ PP_P_____P_PP
 PP_P_P_P_P_PP
 PP_______P_PP
 PP_PPPPP_PFPP
-PPPE______PPP
+PPPF______PPP

@@ -16,4 +16,10 @@ wait end_transition
 wait enemies_dead
 wait delay 60
 
+load_music mmsm
+play_music 0
+wait music_pos 7
+cue_music 1
+wait current_music 2
+
 set_main_script level1/part5
