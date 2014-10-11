@@ -1,4 +1,4 @@
-#autosave
+autosave
 
 transition level1/part5/1 HintedTransition
 wait end_transition

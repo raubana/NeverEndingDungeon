@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import*
 
-from common import lerp_colors
+from common import lerp_colors, lerp
 from libs.Sprite import Sprite
 
 
@@ -52,6 +52,36 @@ class FadeToBlackOnDeath(Fade):
 		p = min(max((self.fade-self.pre_delay)/float(self.fade_length),0.0),1.0)
 		color = lerp_colors((255,255,255),(0,0,0),p)
 		self.main.screen.fill(color,None,special_flags=BLEND_RGB_MULT)
+
+class FastFadeFromWhite(Fade):
+	def init(self):
+		self.fade_length = 15
+
+	def render(self):
+		s = pygame.Surface(self.main.screen_size,SRCALPHA)
+		p = min(max((self.fade-self.pre_delay)/float(self.fade_length),0.0),1.0)
+		color = (255,255,255,lerp(255,0,p))
+		s.fill(color)
+		self.main.screen.blit(s,(0,0))
+
+class FadeToWhite(Fade):
+	def render(self):
+		s = pygame.Surface(self.main.screen_size,SRCALPHA)
+		p = min(max((self.fade-self.pre_delay)/float(self.fade_length),0.0),1.0)
+		color = (255,255,255,lerp(0,255,p))
+		s.fill(color)
+		self.main.screen.blit(s,(0,0))
+
+class WhiteToBlack(Fade):
+	def init(self):
+		self.is_covering_screen = True
+
+	def render(self):
+		p = min(max((self.fade-self.pre_delay)/float(self.fade_length),0.0),1.0)
+		color = lerp_colors((255,255,255),(0,0,0),p)
+		self.main.screen.fill(color)
+
+
 
 class IntroFadeSequence(object):
 	def __init__(self, main):
@@ -110,5 +140,54 @@ class IntroFadeSequence(object):
 				img.fill((255,255,255,int(255*(1-p))),None,special_flags=BLEND_RGBA_MULT)
 
 			self.main.screen.blit(img, rect)
+
+
+class Credits(object):
+	def __init__(self, main):
+		self.main = main
+		self.dead = False
+
+		self.fade = 0
+		self.fade_length = 60
+		self.fadeout_delay = 120
+
+		self.is_covering_screen = True
+
+		self.the_end = pygame.image.load("imgs/misc/theend.png")
+		self.for_now = pygame.image.load("imgs/misc/fornow.png")
+
+	def update(self):
+		if not self.dead:
+			self.fade += 1
+
+	def render(self):
+		self.main.screen.fill((0,0,0))
+
+		img1 = self.the_end.copy()
+		img2 = self.for_now.copy()
+
+		gap = (img1.get_height()+img2.get_height())*0.2
+
+		center = (self.main.screen_size[0]/2, self.main.screen_size[1]/2)
+
+		rect1 = img1.get_rect(midbottom = (center[0], center[1]-(gap/2)))
+		rect2 = img1.get_rect(midtop = (center[0], center[1]+(gap/2)))
+
+		fade = self.fade
+		if fade < self.fade_length:
+			p = fade / float(self.fade_length)
+			img1.fill((255,255,255,int(255*p)),None,special_flags=BLEND_RGBA_MULT)
+			self.main.screen.blit(img1, rect1)
+		elif fade < self.fade_length*2:
+			p = (fade-self.fade_length) / float(self.fade_length)
+			img2.fill((255,255,255,int(255*p)),None,special_flags=BLEND_RGBA_MULT)
+			self.main.screen.blit(img1, rect1)
+			self.main.screen.blit(img2, rect2)
+		elif fade >= self.fade_length*2 + self.fadeout_delay and fade < self.fade_length*3 + self.fadeout_delay:
+			p = min((fade- (self.fade_length*2 + self.fadeout_delay)) / float(self.fade_length),1.0)
+			img1.fill((255,255,255,int(255*(1-p))),None,special_flags=BLEND_RGBA_MULT)
+			img2.fill((255,255,255,int(255*(1-p))),None,special_flags=BLEND_RGBA_MULT)
+			self.main.screen.blit(img1, rect1)
+			self.main.screen.blit(img2, rect2)
 
 

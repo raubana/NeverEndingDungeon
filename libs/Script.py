@@ -6,7 +6,7 @@ from FadeSystem import *
 
 import string
 
-DEBUG_PRINT_PARSE_SCRIPT = 0 #0 is off, 1 is just the comments, and 2 is everything.
+DEBUG_PRINT_PARSE_SCRIPT = 2 #0 is off, 1 is just the comments, and 2 is everything.
 
 class Script(object):
 	def __init__(self, world, filename):
@@ -53,6 +53,8 @@ class Script(object):
 					pass
 				elif line == "autosave":
 					self.world.autosave()
+				elif line == "quit":
+					self.world.main.running = False
 				elif line.startswith("add_script "):
 					script_name = line[len("add_script "):]
 					self.world.scripts.append(Script(self.world, script_name))

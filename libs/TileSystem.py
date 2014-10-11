@@ -317,6 +317,75 @@ class PitTile(Tile):
 		self.outline_type = OUTLINE_INSET
 		self.outline_size = 0
 
+class CrackedTile(Tile):
+	def init(self):
+		self.crack = pygame.image.load("imgs/tiles/cracked_tile1.png")
+		#self.crack = pygame.transform.flip(self.crack, bool(random.randint(0,1)), bool(random.randint(0,1)))
+		#self.crack = pygame.transform.rotate(self.crack, random.randint(0,3)*90)
+
+	def rerender(self):
+		if self.flagged_for_rerender:
+			self.flagged_for_rerender = False
+			color = self.color
+			if self.outline_size > 0:
+				if self.outline_type == OUTLINE_NORMAL:
+					self.rendered_surface.fill(color)
+					outline_color = lerp_colors(color, (0,0,0), self.outline_strength)
+					pygame.draw.rect(self.rendered_surface, outline_color, (0,0,TILE_SIZE,TILE_SIZE), self.outline_size)
+					self.rendered_surface.blit(self.crack,(0,0))
+				elif self.outline_type in (OUTLINE_INSET, OUTLINE_OUTSET):
+					self.rendered_surface.fill(lerp_colors(color, (0,0,0), self.outline_strength*0.5))
+					self.rendered_surface.blit(self.crack,(0,0))
+					c1 = lerp_colors(color, (255,255,255), self.outline_strength*0.25)
+					c2 = lerp_colors(color, (0,0,0), self.outline_strength)
+					if self.outline_type == OUTLINE_INSET:
+						c1,c2 = c2,c1
+					p1 = (self.outline_size, TILE_SIZE-self.outline_size)
+					p2 = (TILE_SIZE-self.outline_size, self.outline_size)
+					p3 = (self.outline_size,self.outline_size)
+					p4 = (TILE_SIZE-self.outline_size,TILE_SIZE-self.outline_size)
+					pygame.draw.polygon(self.rendered_surface, c1, ((0,0),(TILE_SIZE,0),p2,p3,p1,(0,TILE_SIZE)))
+					pygame.draw.polygon(self.rendered_surface, c2, ((TILE_SIZE,TILE_SIZE),(0,TILE_SIZE),p1,p4,p2,(TILE_SIZE,0)))
+			else:
+				self.rendered_surface.fill(color)
+
+class CrackedWallTile(Tile):
+	def init(self):
+		self.solid = True
+		self.color = copy_color(TILE_WALLTILE_COLOR)
+		self.outline_strength = 0.35
+		self.outline_size = 3
+		self.outline_type = OUTLINE_OUTSET
+
+		self.crack = pygame.image.load("imgs/tiles/cracked_tile1.png")
+		#self.crack = pygame.transform.flip(self.crack, bool(random.randint(0,1)), bool(random.randint(0,1)))
+		#self.crack = pygame.transform.rotate(self.crack, random.randint(0,3)*90)
+
+	def rerender(self):
+		if self.flagged_for_rerender:
+			self.flagged_for_rerender = False
+			color = self.color
+			if self.outline_size > 0:
+				if self.outline_type == OUTLINE_NORMAL:
+					self.rendered_surface.fill(color)
+					outline_color = lerp_colors(color, (0,0,0), self.outline_strength)
+					pygame.draw.rect(self.rendered_surface, outline_color, (0,0,TILE_SIZE,TILE_SIZE), self.outline_size)
+					self.rendered_surface.blit(self.crack,(0,0))
+				elif self.outline_type in (OUTLINE_INSET, OUTLINE_OUTSET):
+					self.rendered_surface.fill(lerp_colors(color, (0,0,0), self.outline_strength*0.5))
+					self.rendered_surface.blit(self.crack,(0,0))
+					c1 = lerp_colors(color, (255,255,255), self.outline_strength*0.25)
+					c2 = lerp_colors(color, (0,0,0), self.outline_strength)
+					if self.outline_type == OUTLINE_INSET:
+						c1,c2 = c2,c1
+					p1 = (self.outline_size, TILE_SIZE-self.outline_size)
+					p2 = (TILE_SIZE-self.outline_size, self.outline_size)
+					p3 = (self.outline_size,self.outline_size)
+					p4 = (TILE_SIZE-self.outline_size,TILE_SIZE-self.outline_size)
+					pygame.draw.polygon(self.rendered_surface, c1, ((0,0),(TILE_SIZE,0),p2,p3,p1,(0,TILE_SIZE)))
+					pygame.draw.polygon(self.rendered_surface, c2, ((TILE_SIZE,TILE_SIZE),(0,TILE_SIZE),p1,p4,p2,(TILE_SIZE,0)))
+			else:
+				self.rendered_surface.fill(color)
 
 
 class VisibleGrid(object):

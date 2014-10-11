@@ -1,10 +1,10 @@
 13,9
 PPP______EPPP
 PPFP_PPPPP_PP
-PP_P___P___PP
-PP_PPP_P_P_PP
+PP_P_______PP
+PP_P_P_P_P_PP
 PP_P_____P_PP
-PP_P_P_PPP_PP
-PP___P___P_PP
+PP_P_P_P_P_PP
+PP_______P_PP
 PP_PPPPP_PFPP
 PPPE______PPP

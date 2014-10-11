@@ -49,7 +49,7 @@ wait delay 30
 set_player_direction 1
 wait delay 15
 earthquake 1
-play_sound room1 0.35
+play_sound room1 0.4
 #add_script startscreen/face_talk
 set_grid startscreen/newgame_angryface_mouthopen
 force_full_rerender
@@ -66,7 +66,7 @@ set_player_thought none
 
 #Suddenly, the rumbling starts again, and the cave shuts closed!
 earthquake 1
-play_sound room2 0.35
+play_sound room2 0.4
 #add_script startscreen/face_talk
 wait delay 10
 add_script common/player_panic

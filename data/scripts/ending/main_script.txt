@@ -1,0 +1,93 @@
+autosave
+
+transition ending/0 LeftToRightWipe 60
+
+wait trigger_tile 1
+stop_music
+disable_player_controls
+set_player_direction 3
+set_player_walking False
+
+load_music ending
+play_music 0
+
+transition ending/1 RightToLeftWipe 60
+wait end_transition
+wait delay 90
+
+play_sound roomlonglaugh 0.25
+wait delay 360
+play_sound room3 0.4
+wait delay 120
+play_sound room4 0.4
+wait delay 240
+
+transition ending/2 LeftToRightWipe 1
+wait end_transition
+wait delay 60
+transition ending/3 LeftToRightWipe 1
+wait end_transition
+wait delay 60
+transition ending/4 LeftToRightWipe 1
+wait end_transition
+wait delay 60
+set_fade FastFadeFromWhite
+play_sound roompain1 0.4
+transition ending/5 LeftToRightWipe 1
+wait end_transition
+wait end_fade
+wait delay 180
+play_sound roompain2 0.4
+transition ending/6 LeftToRightWipe 1
+wait end_transition
+wait delay 120
+earthquake 1
+play_sound roomgrowl2 0.4
+wait delay 90
+transition ending/7 LeftToRightWipe 1
+wait end_transition
+earthquake 0
+cue_music 1
+wait current_music 2
+
+earthquake 1
+set_grid ending/8
+force_full_rerender
+set_player_pos [self.world.player.pos[0]+(3*TILE_SIZE), self.world.player.pos[1]]
+set_preferred_offset [self.world.preferred_offset[0] - (TILE_SIZE*3), self.world.preferred_offset[1]]
+set_offset self.world.preferred_offset
+disable_update_offset
+wait delay 30
+earthquake 3
+transition ending/10 TopToBottomWipe 90
+wait end_transition
+
+enable_update_offset
+earthquake 1
+set_player_direction 3
+set_player_walking True
+
+wait trigger_tile 1
+disable_update_offset
+wait delay 120
+transition ending/11 LeftToRightWipe 1
+earthquake 0
+wait end_transition
+wait music_pos 7
+cue_music 3
+wait current_music 3
+wait music_pos 1
+wait music_pos 8
+cue_music 0
+play_sound roomlaugh1 0.1
+wait delay 180
+
+set_fade FadeToWhite
+wait end_fade
+set_fade WhiteToBlack
+wait end_fade
+set_fade Credits
+wait end_fade
+quit
+
+

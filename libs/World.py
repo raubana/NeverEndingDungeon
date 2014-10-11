@@ -69,8 +69,13 @@ class World(object):
 
 		self.sounds["room1"] = pygame.mixer.Sound("snds/vo/room1.ogg")
 		self.sounds["room2"] = pygame.mixer.Sound("snds/vo/room2.ogg")
+		self.sounds["room3"] = pygame.mixer.Sound("snds/vo/room3.ogg")
+		self.sounds["room4"] = pygame.mixer.Sound("snds/vo/room4.ogg")
+		self.sounds["room5"] = pygame.mixer.Sound("snds/vo/room5.ogg")
 		self.sounds["roomlaugh1"] = pygame.mixer.Sound("snds/vo/roomlaugh1.ogg")
+		self.sounds["roomlonglaugh"] = pygame.mixer.Sound("snds/vo/roomlonglaugh.ogg")
 		self.sounds["roomgrowl1"] = pygame.mixer.Sound("snds/vo/roomgrowl1.ogg")
+		self.sounds["roomgrowl2"] = pygame.mixer.Sound("snds/vo/roomgrowl2.ogg")
 		self.sounds["roompain1"] = pygame.mixer.Sound("snds/vo/roompain1.ogg")
 		self.sounds["roompain2"] = pygame.mixer.Sound("snds/vo/roompain2.ogg")
 
@@ -182,6 +187,10 @@ class World(object):
 					row.append(Spawner1Tile(self.main))
 				elif s == "F":
 					row.append(Spawner2Tile(self.main))
+				elif s == "%":
+					row.append(CrackedTile(self.main))
+				elif s == "#":
+					row.append(CrackedWallTile(self.main))
 			grid.tiles.append(row)
 
 		return grid

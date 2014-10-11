@@ -36,7 +36,7 @@ To run the source-code on any OS, you'll need:
 Please see the file named "LICENCE" for details regarding the licence for this project.
 
 A WORD OF WARNING: Run and/or modify this project at your own risk. Python can screw up your computer, so don't
-run this project if you're not ready to accept responsibility for anything that could goes wrong. Also, since this
+run this project if you're not ready to accept responsibility for anything that could go wrong. Also, since this
 project was coded in such a short amount of time, many safe-guards were never put into place that should have been
 - so, again, modify at your own risk.
 
