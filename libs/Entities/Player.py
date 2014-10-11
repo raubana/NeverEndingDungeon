@@ -174,6 +174,7 @@ class Player(Entity):
 			if self.main.world.grid.is_legal_coords(pos, True):
 				tile = self.main.world.grid.tiles[pos[1]][pos[0]]
 				if tile.is_a_pit:
+					self.fall_pos = ((pos[0]+0.5)*TILE_SIZE, (pos[1]+0.5)*TILE_SIZE)
 					self.__fall__()
 
 			#Hurt Update
@@ -326,10 +327,8 @@ class Player(Entity):
 					self.direction = ((self.fall-self.dying_predelay)/4)%4
 					self.set_sprite_direction()
 					self.sprite.set_frame("walk1")
-					pos = round_coords((float(self.pos[0])/TILE_SIZE,float(self.pos[1])/TILE_SIZE))
-					pos = [(pos[0]+0.5)*TILE_SIZE, (pos[1]+0.5)*TILE_SIZE]
 					self.pos = lerp_pos(self.pos,
-										pos,
+										self.fall_pos,
 										0.1)
 				else:
 					self.dead = True

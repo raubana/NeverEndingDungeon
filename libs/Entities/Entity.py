@@ -25,6 +25,7 @@ class Entity(object):
 		self.falling = False
 		self.fall = 0
 		self.fall_length = 60
+		self.fall_pos = None
 
 		self.speed = 2.0
 
